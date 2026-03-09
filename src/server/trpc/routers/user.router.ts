@@ -1,0 +1,149 @@
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { toFrontendRole } from "../mappers";
+
+export const userRouter = router({
+  me: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.userId },
+      include: { company: true },
+    });
+    if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "Usuário não encontrado" });
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone ?? "",
+      company: user.company?.name ?? "",
+      createdAt: user.createdAt,
+    };
+  }),
+
+  listClients: protectedProcedure.query(async ({ ctx }) => {
+    const users = await ctx.db.user.findMany({
+      where: { role: "CLIENT" },
+      include: { company: true },
+      orderBy: { name: "asc" },
+    });
+    return users.map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: toFrontendRole(u.role),
+      company: u.company?.name,
+      createdAt: u.createdAt,
+    }));
+  }),
+
+  byId: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: input.id },
+      include: { company: true },
+    });
+    if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "Usuário não encontrado" });
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: toFrontendRole(user.role),
+      company: user.company?.name,
+      createdAt: user.createdAt,
+    };
+  }),
+
+  createClient: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        company: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.db.user.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          role: "CLIENT",
+        },
+      });
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: toFrontendRole(user.role),
+        createdAt: user.createdAt,
+      };
+    }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1).optional(),
+        email: z.string().email().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      const user = await ctx.db.user.update({
+        where: { id },
+        data,
+      });
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: toFrontendRole(user.role),
+        createdAt: user.createdAt,
+      };
+    }),
+
+  updateProfile: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1).optional(),
+        phone: z.string().optional(),
+        companyName: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      let companyId: string | null = null;
+      if (input.companyName != null && input.companyName.trim() !== "") {
+        let company = await ctx.db.company.findFirst({
+          where: { name: input.companyName.trim() },
+        });
+        if (!company) {
+          company = await ctx.db.company.create({
+            data: { name: input.companyName.trim() },
+          });
+        }
+        companyId = company.id;
+      }
+      const user = await ctx.db.user.update({
+        where: { id: ctx.userId },
+        data: {
+          ...(input.name != null && { name: input.name }),
+          ...(input.phone !== undefined && { phone: input.phone || null }),
+          ...(companyId !== null && { companyId }),
+        },
+        include: { company: true },
+      });
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone ?? "",
+        company: user.company?.name ?? "",
+        createdAt: user.createdAt,
+      };
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.user.delete({ where: { id: input.id } });
+      return { success: true };
+    }),
+});

@@ -1,0 +1,384 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// USUARIOS E AUTENTICACAO
+// ==========================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  phone         String?
+  role          UserRole  @default(CLIENT)
+  bio           String?
+  hourlyRate    Float?
+  availability  String?
+  skills        String? // JSON array
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relacionamentos
+  company          Company?       @relation(fields: [companyId], references: [id])
+  companyId        String?
+  projects         Project[]      @relation("ProjectClient")
+  assignedProjects Project[]      @relation("ProjectDeveloper")
+  comments         Comment[]
+  files            ProjectFile[]
+  notifications    Notification[]
+  activityLogs     ActivityLog[]
+  sessions         Session[]
+  accounts         Account[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+enum UserRole {
+  ADMIN
+  DEVELOPER
+  CLIENT
+}
+
+// ==========================================
+// EMPRESAS / CLIENTES
+// ==========================================
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  document  String?  @unique // CNPJ ou CPF
+  email     String?
+  phone     String?
+  address   String?
+  city      String?
+  state     String?
+  zipCode   String?
+  website   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  users    User[]
+  projects Project[]
+
+  @@map("companies")
+}
+
+// ==========================================
+// PROJETOS
+// ==========================================
+
+model Project {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  type        ProjectType
+  category    ProjectCategory
+  status      ProjectStatus   @default(BACKLOG)
+  priority    Priority        @default(MEDIUM)
+  platform    String?
+
+  // Datas
+  startDate   DateTime?
+  deadline    DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Detalhes da solicitacao
+  targetAudience        String?
+  expectedUsers         String?
+  designPreference      String?
+  references            String?
+  urgency               String?
+  additionalInfo        String?
+  hasExistingSystem     Boolean @default(false)
+  existingSystemDetails String?
+
+  // Relacionamentos
+  client       User             @relation("ProjectClient", fields: [clientId], references: [id])
+  clientId     String
+  company      Company?         @relation(fields: [companyId], references: [id])
+  companyId    String?
+  developer    User?            @relation("ProjectDeveloper", fields: [developerId], references: [id])
+  developerId  String?
+  features     ProjectFeature[]
+  tasks        Task[]
+  comments     Comment[]
+  files        ProjectFile[]
+  activityLogs ActivityLog[]
+
+  @@map("projects")
+}
+
+model ProjectFeature {
+  id        String   @id @default(cuid())
+  name      String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  createdAt DateTime @default(now())
+
+  @@map("project_features")
+}
+
+model ProjectRequest {
+  id                String   @id @default(cuid())
+  name              String
+  email             String
+  company           String?
+  projectType       String
+  description       String
+  estimatedDeadline String?
+  estimatedBudget   String?
+  createdAt         DateTime @default(now())
+
+  @@map("project_requests")
+}
+
+enum ProjectType {
+  // Contabilidade
+  CONTABIL_FISCAL
+  CONTABIL_FOLHA
+  CONTABIL_BALANCO
+  CONTABIL_OBRIGACOES
+  CONTABIL_CONSULTORIA
+  // RPA
+  RPA_AUTOMACAO
+  RPA_INTEGRACAO
+  RPA_EXTRACAO
+  RPA_RELATORIOS
+  RPA_VALIDACAO
+  // Desenvolvimento
+  DEV_SISTEMA_WEB
+  DEV_APP_MOBILE
+  DEV_API
+  DEV_WEBSITE
+  DEV_PORTAL
+  DEV_MANUTENCAO
+  DEV_INTEGRACAO
+  // Outros
+  CONSULTORIA
+  OUTRO
+}
+
+enum ProjectCategory {
+  CONTABILIDADE
+  RPA
+  DESENVOLVIMENTO
+  CONSULTORIA
+  OUTRO
+}
+
+enum ProjectStatus {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ==========================================
+// TAREFAS DO KANBAN
+// ==========================================
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  order       Int        @default(0)
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relacionamentos
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  assignee  String? // User ID
+
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+// ==========================================
+// COMENTARIOS / CHAT
+// ==========================================
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@map("comments")
+}
+
+// ==========================================
+// ARQUIVOS
+// ==========================================
+
+model ProjectFile {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  size      Int // em bytes
+  type      String // MIME type
+  createdAt DateTime @default(now())
+
+  // Relacionamentos
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId    String
+  uploadedBy   User    @relation(fields: [uploadedById], references: [id])
+  uploadedById String
+
+  @@map("project_files")
+}
+
+// ==========================================
+// NOTIFICACOES
+// ==========================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  title     String
+  message   String
+  type      NotificationType
+  read      Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+
+  // Relacionamentos
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  PROJECT_UPDATE
+  COMMENT
+  FILE_UPLOAD
+  STATUS_CHANGE
+  PAYMENT
+  SYSTEM
+}
+
+// ==========================================
+// LOG DE ATIVIDADES
+// ==========================================
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  // Relacionamentos
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@map("activity_logs")
+}
+
+// ==========================================
+// CONFIGURACOES DO SISTEMA
+// ==========================================
+
+model SystemSettings {
+  id               String   @id @default("default")
+  companyName      String   @default("Minha Empresa")
+  companyEmail     String?
+  companyPhone     String?
+  companyAddress   String?
+  companyWebsite   String?
+  maxFileSize      Int      @default(52428800) // 50MB em bytes
+  allowedFileTypes String? // JSON array
+  maintenanceMode  Boolean  @default(false)
+  requireTwoFactor Boolean  @default(false)
+  sessionTimeout   Int      @default(30) // minutos
+  pixEnabled       Boolean  @default(true)
+  pixKey           String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("system_settings")
+}

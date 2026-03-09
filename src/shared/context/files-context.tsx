@@ -1,0 +1,96 @@
+"use client";
+
+import {
+  createContext,
+  useContext,
+  useCallback,
+  type ReactNode,
+} from "react";
+import type { ProjectFile } from "@/shared/types";
+import { trpc } from "@/shared/trpc/client";
+
+interface FilesContextType {
+  getFilesByProject: (projectId: string) => ProjectFile[];
+  addFile: (file: Omit<ProjectFile, "id" | "createdAt">) => void;
+  deleteFile: (id: string) => void;
+  getTotalSize: (projectId: string) => number;
+}
+
+const FilesContext = createContext<FilesContextType | undefined>(undefined);
+
+function mapFile(f: Record<string, unknown>): ProjectFile {
+  return {
+    id: f.id as string,
+    projectId: f.projectId as string,
+    name: f.name as string,
+    url: f.url as string,
+    type: f.type as string,
+    size: f.size as number,
+    uploadedBy: f.uploadedBy as string,
+    createdAt: f.createdAt instanceof Date ? f.createdAt : new Date(f.createdAt as string),
+  };
+}
+
+export function FilesProvider({ children }: { children: ReactNode }) {
+  const utils = trpc.useUtils();
+  const createFile = trpc.file.create.useMutation({
+    onSuccess: (_, variables) =>
+      utils.file.byProject.invalidate({ projectId: variables.projectId }),
+  });
+  const deleteFileMutation = trpc.file.delete.useMutation({
+    onSuccess: () => utils.file.byProject.invalidate(),
+  });
+
+  const getFilesByProject = useCallback((_projectId: string) => [] as ProjectFile[], []);
+  const addFile = useCallback(
+    (file: Omit<ProjectFile, "id" | "createdAt">) => {
+      createFile.mutate({
+        projectId: file.projectId,
+        name: file.name,
+        url: file.url,
+        type: file.type,
+        size: file.size,
+      });
+    },
+    [createFile]
+  );
+  const deleteFile = useCallback(
+    (id: string) => deleteFileMutation.mutate({ id }),
+    [deleteFileMutation]
+  );
+  const getTotalSize = useCallback((_projectId: string) => 0, []);
+
+  return (
+    <FilesContext.Provider
+      value={{
+        getFilesByProject,
+        addFile,
+        deleteFile,
+        getTotalSize,
+      }}
+    >
+      {children}
+    </FilesContext.Provider>
+  );
+}
+
+export function useFiles(projectId?: string) {
+  const context = useContext(FilesContext);
+  if (context === undefined) {
+    throw new Error("useFiles deve ser usado dentro de um FilesProvider");
+  }
+  const { data: filesData = [] } = trpc.file.byProject.useQuery(
+    { projectId: projectId ?? "" },
+    { enabled: !!projectId }
+  );
+  const files: ProjectFile[] = Array.isArray(filesData)
+    ? (filesData as Array<Record<string, unknown>>).map(mapFile)
+    : [];
+  const totalSize = files.reduce((acc, f) => acc + f.size, 0);
+  return {
+    ...context,
+    files: projectId ? files : [],
+    getFilesByProject: (pid: string) => (pid === projectId ? files : context.getFilesByProject(pid)),
+    getTotalSize: (pid: string) => (pid === projectId ? totalSize : 0),
+  };
+}

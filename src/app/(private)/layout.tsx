@@ -1,0 +1,44 @@
+"use client";
+
+import { useAuth } from "@/shared/context/auth-context";
+import { Header, AppSidebar } from "@/shared/components";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Spinner } from "@/src/shared/components/ui/spinner";
+
+export default function PrivateLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Spinner className="h-8 w-8" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="flex">
+        <AppSidebar />
+        <main className="flex-1 ml-64 p-6">{children}</main>
+      </div>
+    </div>
+  );
+}

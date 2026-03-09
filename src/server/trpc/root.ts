@@ -1,0 +1,20 @@
+import { router } from "./trpc";
+import { projectRouter } from "./routers/project.router";
+import { userRouter } from "./routers/user.router";
+import { authRouter } from "./routers/auth.router";
+import { requestRouter } from "./routers/request.router";
+import { commentRouter } from "./routers/comment.router";
+import { fileRouter } from "./routers/file.router";
+import { activityRouter } from "./routers/activity.router";
+
+export const appRouter = router({
+  project: projectRouter,
+  user: userRouter,
+  auth: authRouter,
+  request: requestRouter,
+  comment: commentRouter,
+  file: fileRouter,
+  activity: activityRouter,
+});
+
+export type AppRouter = typeof appRouter;
