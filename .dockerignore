@@ -12,9 +12,6 @@ pnpm-debug.log*
 .env
 .env.*
 
-*.db
-*.db-journal
-
 .git
 .gitignore
 

@@ -9,7 +9,3 @@ node_modules/
 .env*.local
 .env
 .DS_Store
-
-# SQLite
-*.db
-*.db-journal
