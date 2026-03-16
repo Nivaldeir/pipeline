@@ -36,6 +36,20 @@ export const userRouter = router({
     }));
   }),
 
+  listDevelopers: protectedProcedure.query(async ({ ctx }) => {
+    const users = await ctx.db.user.findMany({
+      where: { role: "DEVELOPER", isActive: true },
+      orderBy: { name: "asc" },
+    });
+    return users.map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: toFrontendRole(u.role),
+      createdAt: u.createdAt,
+    }));
+  }),
+
   byId: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     const user = await ctx.db.user.findUnique({
       where: { id: input.id },

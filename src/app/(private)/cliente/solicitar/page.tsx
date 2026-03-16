@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/context/auth-context";
 import { useProjects } from "@/shared/context/projects-context";
@@ -35,93 +35,13 @@ import {
   TooltipTrigger,
 } from "@/src/shared/components/ui/tooltip";
 
-const PROJECT_TYPES = [
-  // Contabilidade
-  { value: "contabil-fiscal", label: "Contabilidade - Gestao Fiscal" },
-  { value: "contabil-folha", label: "Contabilidade - Folha de Pagamento" },
-  { value: "contabil-balanco", label: "Contabilidade - Balanco e DRE" },
-  { value: "contabil-obrigacoes", label: "Contabilidade - Obrigacoes Acessorias" },
-  { value: "contabil-consultoria", label: "Contabilidade - Consultoria" },
-  // RPA
-  { value: "rpa-automacao", label: "RPA - Automacao de Processos" },
-  { value: "rpa-integracao", label: "RPA - Integracao de Sistemas" },
-  { value: "rpa-extracao", label: "RPA - Extracao de Dados" },
-  { value: "rpa-relatorios", label: "RPA - Geracao de Relatorios" },
-  { value: "rpa-validacao", label: "RPA - Validacao e Conferencia" },
-  // Desenvolvimento
-  { value: "dev-sistema-web", label: "Desenvolvimento - Sistema Web / SaaS" },
-  { value: "dev-app-mobile", label: "Desenvolvimento - Aplicativo Mobile" },
-  { value: "dev-api", label: "Desenvolvimento - API / Backend" },
-  { value: "dev-website", label: "Desenvolvimento - Website / Landing Page" },
-  { value: "dev-portal", label: "Desenvolvimento - Portal / Intranet" },
-  { value: "dev-manutencao", label: "Desenvolvimento - Manutencao / Melhorias" },
-  { value: "dev-integracao", label: "Desenvolvimento - Integracao de Sistemas" },
-  // Outros
-  { value: "consultoria", label: "Consultoria Tecnica" },
-  { value: "outro", label: "Outro" },
-];
-
-const PLATFORMS = [
-  { value: "web", label: "Web (Desktop e Mobile)" },
-  { value: "ios", label: "iOS (iPhone/iPad)" },
-  { value: "android", label: "Android" },
-  { value: "ambos-mobile", label: "iOS e Android" },
-  { value: "desktop", label: "Desktop (Windows/Mac)" },
-  { value: "todas", label: "Todas as plataformas" },
-];
-
-const URGENCY_LEVELS = [
-  { value: "baixa", label: "Baixa - Sem pressa definida" },
-  { value: "media", label: "Média - Próximos 2-3 meses" },
-  { value: "alta", label: "Alta - Próximo mês" },
-  { value: "urgente", label: "Urgente - O mais rápido possível" },
-];
-
-const TARGET_AUDIENCES = [
-  { value: "b2b", label: "Empresas (B2B)" },
-  { value: "b2c", label: "Consumidores finais (B2C)" },
-  { value: "interno", label: "Uso interno da empresa" },
-  { value: "ambos", label: "Empresas e consumidores" },
-];
-
-const FEATURE_SUGGESTIONS = [
-  // Contabilidade
-  "Emissao de notas fiscais",
-  "Calculo de impostos automatico",
-  "Conciliacao bancaria",
-  "Controle de contas a pagar/receber",
-  "Geracao de guias (DARF, GPS, DAS)",
-  "Balancete e DRE automatizado",
-  // RPA
-  "Leitura de XMLs/NFes",
-  "Preenchimento automatico de sistemas",
-  "Extracao de dados de PDFs",
-  "Envio automatico de emails",
-  "Validacao de cadastros",
-  "Integracao com ERP",
-  // Desenvolvimento
-  "Login / Cadastro de usuarios",
-  "Dashboard / Painel administrativo",
-  "Relatorios e graficos",
-  "Notificacoes (email/push)",
-  "Upload de arquivos",
-  "Integracao com APIs externas",
-  "Exportacao de dados (PDF/Excel)",
-  "Controle de permissoes/usuarios",
-];
-
-const DESIGN_PREFERENCES = [
-  { value: "moderno", label: "Moderno e minimalista" },
-  { value: "corporativo", label: "Corporativo e profissional" },
-  { value: "criativo", label: "Criativo e ousado" },
-  { value: "classico", label: "Clássico e tradicional" },
-  { value: "tenho-identidade", label: "Já tenho identidade visual" },
-  { value: "a-definir", label: "Preciso de ajuda para definir" },
-];
+import { PROJECT_TYPES, FEATURE_SUGGESTIONS, PLATFORMS, TARGET_AUDIENCES, URGENCY_LEVELS } from "./utils/solicitar.utils";
+import { useFiles } from "@/shared/context/files-context";
 
 export default function SolicitarProjetoPage() {
   const { user } = useAuth();
   const { addProject } = useProjects();
+  const { addFile } = useFiles();
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -144,6 +64,12 @@ export default function SolicitarProjetoPage() {
     additionalInfo: "",
   });
   const [newFeature, setNewFeature] = useState("");
+  const [chatMessages, setChatMessages] = useState<
+    { id: number; author: "cliente"; text: string; createdAt: Date }[]
+  >([]);
+  const [chatInput, setChatInput] = useState("");
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -191,6 +117,27 @@ export default function SolicitarProjetoPage() {
     }));
   }
 
+  function handleAttachFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files) return;
+    setAttachedFiles(Array.from(files));
+  }
+
+  function handleAddChatMessage() {
+    const trimmed = chatInput.trim();
+    if (!trimmed) return;
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        author: "cliente",
+        text: trimmed,
+        createdAt: new Date(),
+      },
+    ]);
+    setChatInput("");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user?.id) {
@@ -212,7 +159,7 @@ export default function SolicitarProjetoPage() {
 
     setIsSubmitting(true);
     try {
-      await addProject({
+      const projectId = await addProject({
         title: formData.title,
         description: formData.description,
         clientId: user.id,
@@ -226,12 +173,30 @@ export default function SolicitarProjetoPage() {
                 ? "low"
                 : "medium",
         projectType: formData.type || "Outro",
+        targetAudience: formData.targetAudience,
+        expectedUsers: formData.expectedUsers,
+        urgency: formData.urgency,
+        features: formData.features,
+        estimatedDeadline: formData.deadline
+          ? new Date(formData.deadline)
+          : undefined,
       });
+
+      // Upload de anexos vinculados ao novo projeto
+      if (projectId && attachedFiles.length > 0) {
+        for (const file of attachedFiles) {
+          try {
+            await addFile({ projectId, file });
+          } catch {
+            // erro por arquivo é tratado silenciosamente aqui; feedback principal é do projeto
+          }
+        }
+      }
 
       toast({
         title: "Solicitação enviada!",
         description:
-          "Seu projeto foi criado e está no backlog. Você pode acompanhar o andamento na página Meus Projetos.",
+          "Seu projeto foi criado, anexos enviados e está no backlog. Você pode acompanhar o andamento na página Meus Projetos.",
       });
       router.push("/cliente");
     } catch {
@@ -248,7 +213,7 @@ export default function SolicitarProjetoPage() {
 
   return (
     <TooltipProvider>
-      <div className="space-y-6 max-w-3xl mx-auto pb-10">
+      <div className="space-y-6  mx-auto pb-10">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link href="/cliente">
@@ -343,6 +308,22 @@ export default function SolicitarProjetoPage() {
                   placeholder="Descreva o objetivo principal do projeto. O que ele deve fazer? Qual problema resolve?"
                   rows={5}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Anexos iniciais (opcional)</Label>
+                <Input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  onChange={handleAttachFilesChange}
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.zip,.rar"
+                />
+                {attachedFiles.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {attachedFiles.length} arquivo(s) selecionado(s)
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -713,6 +694,61 @@ export default function SolicitarProjetoPage() {
                 placeholder="Restricoes tecnicas, integracao com outros sistemas, requisitos de seguranca, informacoes sobre a empresa..."
                 rows={4}
               />
+            </CardContent>
+          </Card>
+
+          {/* Chat inicial do projeto (apenas para apoio na solicitacao) */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Chat inicial do projeto</CardTitle>
+              <CardDescription>
+                Use este espaco para anotar ideias, perguntas ou combinacoes antes de enviar a solicitacao.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="h-40 max-h-60 overflow-y-auto rounded-md border border-border/60 bg-muted/40 p-3 space-y-2 text-sm">
+                {chatMessages.length === 0 ? (
+                  <p className="text-muted-foreground text-xs">
+                    Nenhuma mensagem ainda. Escreva a primeira mensagem abaixo.
+                  </p>
+                ) : (
+                  chatMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className="flex flex-col items-start gap-0.5 rounded-md bg-background/80 px-3 py-2 shadow-sm"
+                    >
+                      <span className="text-[11px] font-medium text-muted-foreground">
+                        Cliente • {msg.createdAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      <p>{msg.text}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Escreva uma mensagem..."
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddChatMessage();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleAddChatMessage}
+                  disabled={!chatInput.trim()}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Este chat e apenas um rascunho local para apoiar o preenchimento da solicitacao.
+              </p>
             </CardContent>
           </Card>
 

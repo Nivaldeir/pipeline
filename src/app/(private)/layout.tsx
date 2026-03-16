@@ -5,6 +5,8 @@ import { Header, AppSidebar } from "@/shared/components";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Spinner } from "@/src/shared/components/ui/spinner";
+import { ModalProvider } from "@/src/shared/context/modal-context";
+import { NestedModal } from "@/src/shared/components/modals/nested-modal";
 
 export default function PrivateLayout({
   children,
@@ -33,12 +35,14 @@ export default function PrivateLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="flex">
-        <AppSidebar />
-        <main className="flex-1 ml-64 p-6">{children}</main>
+    <ModalProvider>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex">
+          <AppSidebar />
+          <main className="flex-1 ml-64 p-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </ModalProvider>
   );
 }

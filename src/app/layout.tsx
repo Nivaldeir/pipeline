@@ -13,7 +13,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "coManager - Sistema de Gestão de Projetos",
+  title: "TATICCA Pipeline - Sistema de Gestão de Projetos",
   description:
     "Centralize a solicitação, organização e acompanhamento dos seus projetos com quadro Kanban interativo.",
   generator: "v0.app",

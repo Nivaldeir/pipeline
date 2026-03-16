@@ -9,7 +9,7 @@ export function Footer() {
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary shadow-sm">
               <span className="text-sm font-bold text-primary-foreground">co</span>
             </div>
-            <span className="font-semibold">coManager</span>
+            <span className="font-semibold">TATICCA Pipeline</span>
           </Link>
 
           <nav className="flex flex-wrap items-center justify-center gap-6 sm:gap-8">
@@ -40,7 +40,7 @@ export function Footer() {
           </nav>
 
           <p className="text-xs sm:text-sm text-muted-foreground order-last md:order-none">
-            2026 coManager. Todos os direitos reservados.
+            2026 TATICCA Pipeline. Todos os direitos reservados.
           </p>
         </div>
       </div>

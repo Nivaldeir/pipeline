@@ -6,6 +6,7 @@ import { requestRouter } from "./routers/request.router";
 import { commentRouter } from "./routers/comment.router";
 import { fileRouter } from "./routers/file.router";
 import { activityRouter } from "./routers/activity.router";
+import { featureRouter } from "./routers/feature.router";
 
 export const appRouter = router({
   project: projectRouter,
@@ -15,6 +16,7 @@ export const appRouter = router({
   comment: commentRouter,
   file: fileRouter,
   activity: activityRouter,
+  feature: featureRouter,
 });
 
 export type AppRouter = typeof appRouter;

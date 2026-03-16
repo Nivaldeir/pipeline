@@ -1,22 +1,27 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useCallback,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useCallback, type ReactNode } from "react";
 import type { ProjectFile } from "@/shared/types";
 import { trpc } from "@/shared/trpc/client";
 
 interface FilesContextType {
   getFilesByProject: (projectId: string) => ProjectFile[];
-  addFile: (file: Omit<ProjectFile, "id" | "createdAt">) => void;
+  addFile: (params: { projectId: string; file: File }) => Promise<void>;
   deleteFile: (id: string) => void;
   getTotalSize: (projectId: string) => number;
 }
 
 const FilesContext = createContext<FilesContextType | undefined>(undefined);
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
 
 function mapFile(f: Record<string, unknown>): ProjectFile {
   return {
@@ -33,7 +38,7 @@ function mapFile(f: Record<string, unknown>): ProjectFile {
 
 export function FilesProvider({ children }: { children: ReactNode }) {
   const utils = trpc.useUtils();
-  const createFile = trpc.file.create.useMutation({
+  const uploadFile = trpc.file.upload.useMutation({
     onSuccess: (_, variables) =>
       utils.file.byProject.invalidate({ projectId: variables.projectId }),
   });
@@ -41,18 +46,24 @@ export function FilesProvider({ children }: { children: ReactNode }) {
     onSuccess: () => utils.file.byProject.invalidate(),
   });
 
-  const getFilesByProject = useCallback((_projectId: string) => [] as ProjectFile[], []);
+  const getFilesByProject = useCallback(
+    (_projectId: string) => [] as ProjectFile[],
+    []
+  );
   const addFile = useCallback(
-    (file: Omit<ProjectFile, "id" | "createdAt">) => {
-      createFile.mutate({
-        projectId: file.projectId,
+    async ({ projectId, file }: { projectId: string; file: File }) => {
+      const buffer = await file.arrayBuffer();
+      const base64 = arrayBufferToBase64(buffer);
+
+      uploadFile.mutate({
+        projectId,
         name: file.name,
-        url: file.url,
-        type: file.type,
+        type: file.type || "application/octet-stream",
         size: file.size,
+        data: base64,
       });
     },
-    [createFile]
+    [uploadFile]
   );
   const deleteFile = useCallback(
     (id: string) => deleteFileMutation.mutate({ id }),

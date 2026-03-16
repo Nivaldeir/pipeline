@@ -86,19 +86,6 @@ export function ProjectChat({ projectId }: ProjectChatProps) {
     return new Date(date).toLocaleDateString("pt-BR");
   }
 
-  function getRoleBadge(role: string) {
-    switch (role) {
-      case "admin":
-        return "Admin";
-      case "developer":
-        return "Dev";
-      case "client":
-        return "Cliente";
-      default:
-        return role;
-    }
-  }
-
   function getRoleColor(role: string) {
     switch (role) {
       case "admin":
@@ -150,9 +137,6 @@ export function ProjectChat({ projectId }: ProjectChatProps) {
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-medium text-foreground">
                         {isOwn ? "Você" : comment.userName}
-                      </span>
-                      <span className={cn("text-xs px-1.5 py-0.5 rounded", getRoleColor(comment.userRole))}>
-                        {getRoleBadge(comment.userRole)}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {formatTime(comment.createdAt)}
@@ -243,7 +227,7 @@ export function ProjectChat({ projectId }: ProjectChatProps) {
             size="icon"
             className="shrink-0"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-6 w-6" />
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-1">

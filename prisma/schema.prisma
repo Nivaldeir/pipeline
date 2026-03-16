@@ -165,11 +165,12 @@ model Project {
 }
 
 model ProjectFeature {
-  id        String   @id @default(cuid())
-  name      String
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId String
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  name        String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
 
   @@map("project_features")
 }

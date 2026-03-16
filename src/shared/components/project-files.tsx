@@ -81,9 +81,11 @@ export function ProjectFiles({ projectId, maxSizeMB = 50 }: ProjectFilesProps) {
 
     setIsUploading(true);
 
+    let uploadedCount = 0;
+    let currentTotal = totalSize;
+
     for (const file of Array.from(selectedFiles)) {
-      // Verificar tamanho
-      if (totalSize + file.size > maxSize) {
+      if (currentTotal + file.size > maxSize) {
         toast({
           title: "Limite de armazenamento",
           description: `Não é possível adicionar ${file.name}. Limite de ${maxSizeMB}MB excedido.`,
@@ -92,24 +94,27 @@ export function ProjectFiles({ projectId, maxSizeMB = 50 }: ProjectFilesProps) {
         continue;
       }
 
-      // Simular upload
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      addFile({
-        projectId,
-        name: file.name,
-        url: URL.createObjectURL(file),
-        type: file.type,
-        size: file.size,
-        uploadedBy: user.name,
-      });
+      try {
+        await addFile({ projectId, file });
+        currentTotal += file.size;
+        uploadedCount += 1;
+      } catch {
+        toast({
+          title: "Falha no upload",
+          description: `Não foi possível enviar o arquivo ${file.name}.`,
+          variant: "destructive",
+        });
+      }
     }
 
     setIsUploading(false);
-    toast({
-      title: "Upload concluído",
-      description: `${selectedFiles.length} arquivo(s) adicionado(s) com sucesso.`,
-    });
+
+    if (uploadedCount > 0) {
+      toast({
+        title: "Upload concluído",
+        description: `${uploadedCount} arquivo(s) adicionado(s) com sucesso.`,
+      });
+    }
 
     // Limpar input
     if (fileInputRef.current) {
@@ -135,23 +140,35 @@ export function ProjectFiles({ projectId, maxSizeMB = 50 }: ProjectFilesProps) {
   }
 
   function handleDownload(file: ProjectFile) {
-    // Simular download
-    toast({
-      title: "Download iniciado",
-      description: `Baixando ${file.name}...`,
-    });
+    if (!file.url || file.url === "#") {
+      toast({
+        title: "Download indisponível",
+        description: "Este arquivo não possui uma URL válida para download.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = file.url; // URL pública gerada pelo MinIO
+    link.download = file.name;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   function handlePreview(file: ProjectFile) {
-    // Abrir em nova aba
-    if (file.url !== "#") {
-      window.open(file.url, "_blank");
-    } else {
+    if (!file.url || file.url === "#") {
       toast({
-        title: "Pré-visualização",
-        description: "Arquivo de demonstração não possui preview.",
+        title: "Pré-visualização indisponível",
+        description: "Este arquivo não possui uma URL válida para preview.",
+        variant: "destructive",
       });
+      return;
     }
+
+    window.open(file.url, "_blank");
   }
 
   return (

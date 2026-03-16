@@ -24,7 +24,7 @@ const STATUS_ORDER: ProjectStatus[] = [
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
   backlog: "Backlog",
-  todo: "A Fazer",
+  todo: "Arquitetura",
   "in-progress": "Em Andamento",
   review: "Revisão",
   completed: "Concluído",

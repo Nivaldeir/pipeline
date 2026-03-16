@@ -39,6 +39,7 @@ export const projectRouter = router({
           developer: {
             select: { id: true, name: true, email: true },
           },
+          features: true,
         },
         orderBy: { updatedAt: "desc" },
       });
@@ -53,6 +54,10 @@ export const projectRouter = router({
         developerId: p.developerId ?? undefined,
         projectType: p.platform ?? p.type,
         estimatedDeadline: p.deadline ?? undefined,
+        targetAudience: p.targetAudience ?? undefined,
+        expectedUsers: p.expectedUsers ?? undefined,
+        urgency: p.urgency ?? undefined,
+        features: p.features?.map((f) => f.name) ?? [],
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
         client: p.client
@@ -69,24 +74,52 @@ export const projectRouter = router({
       }));
     }),
 
-  byId: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-    const project = await ctx.db.project.findUnique({
-      where: { id: input.id },
-      include: {
-        client: { select: { id: true, name: true, email: true, role: true } },
-        developer: { select: { id: true, name: true, email: true } },
-        tasks: true,
-      },
-    });
-    if (!project) throw new TRPCError({ code: "NOT_FOUND", message: "Projeto não encontrado" });
-    return {
-      ...project,
-      status: toFrontendStatus(project.status),
-      priority: project.priority.toLowerCase() as "low" | "medium" | "high" | "urgent",
-      deadline: project.deadline ?? undefined,
-      developerId: project.developerId ?? undefined,
-    };
-  }),
+  byId: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const project = await ctx.db.project.findUnique({
+        where: { id: input.id },
+        include: {
+          client: { select: { id: true, name: true, email: true, role: true } },
+          developer: { select: { id: true, name: true, email: true } },
+          tasks: true,
+          features: true,
+        },
+      });
+      if (!project)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Projeto não encontrado" });
+
+      return {
+        id: project.id,
+        title: project.title,
+        description: project.description,
+        status: toFrontendStatus(project.status),
+        priority: project.priority.toLowerCase() as "low" | "medium" | "high" | "urgent",
+        clientId: project.clientId,
+        developerId: project.developerId ?? undefined,
+        projectType: project.platform ?? project.type,
+        estimatedDeadline: project.deadline ?? undefined,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+        targetAudience: project.targetAudience ?? undefined,
+        expectedUsers: project.expectedUsers ?? undefined,
+        urgency: project.urgency ?? undefined,
+        features:
+          project.features?.map((f) => ({
+            id: f.id,
+            name: f.name,
+            completedAt: f.completedAt ?? undefined,
+          })) ?? [],
+        tasks: project.tasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          status: t.status,
+          createdAt: t.createdAt,
+        })),
+        client: project.client,
+        developer: project.developer,
+      };
+    }),
 
   create: protectedProcedure
     .input(
@@ -99,6 +132,10 @@ export const projectRouter = router({
         developerId: z.string().optional(),
         projectType: z.string(),
         estimatedDeadline: z.date().optional(),
+        targetAudience: z.string().optional(),
+        expectedUsers: z.string().optional(),
+        urgency: z.string().optional(),
+        features: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -114,10 +151,20 @@ export const projectRouter = router({
           developerId: input.developerId ?? null,
           platform: input.projectType,
           deadline: input.estimatedDeadline ?? null,
+          targetAudience: input.targetAudience ?? null,
+          expectedUsers: input.expectedUsers ?? null,
+          urgency: input.urgency ?? null,
+          features:
+            input.features && input.features.length
+              ? {
+                  create: input.features.map((name) => ({ name })),
+                }
+              : undefined,
         },
         include: {
           client: { select: { id: true, name: true, email: true } },
           developer: { select: { id: true, name: true, email: true } },
+          features: true,
         },
       });
       await ctx.db.activityLog.create({
@@ -137,6 +184,10 @@ export const projectRouter = router({
         developerId: project.developerId ?? undefined,
         projectType: project.platform ?? "",
         estimatedDeadline: project.deadline ?? undefined,
+        targetAudience: project.targetAudience ?? undefined,
+        expectedUsers: project.expectedUsers ?? undefined,
+        urgency: project.urgency ?? undefined,
+        features: project.features?.map((f) => f.name) ?? [],
         createdAt: project.createdAt,
         updatedAt: project.updatedAt,
       };

@@ -27,7 +27,6 @@ const developerLinks = [
 const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/projetos", label: "Projetos", icon: FolderKanban },
-  { href: "/admin/solicitacoes", label: "Solicitações", icon: FileText },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
   { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];

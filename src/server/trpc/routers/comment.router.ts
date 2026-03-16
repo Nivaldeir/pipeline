@@ -8,7 +8,7 @@ export const commentRouter = router({
       const comments = await ctx.db.comment.findMany({
         where: { projectId: input.projectId },
         include: { user: { select: { id: true, name: true, role: true } } },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: "asc" },
       });
       return comments.map((c) => ({
         id: c.id,

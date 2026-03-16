@@ -25,7 +25,7 @@ export function Header() {
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary shadow-sm">
             <span className="text-primary-foreground font-bold text-sm">co</span>
           </div>
-          <span className="font-semibold text-lg">coManager</span>
+          <span className="font-semibold text-lg">TATICCA Pipeline</span>
         </Link>
 
         <div className="flex items-center gap-4">

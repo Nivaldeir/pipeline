@@ -28,7 +28,7 @@ export function LandingHeader() {
             <span className="text-sm font-bold text-primary-foreground">co</span>
           </div>
           <span className="font-semibold text-base sm:text-lg truncate">
-            coManager
+            TATICCA Pipeline
           </span>
         </Link>
 

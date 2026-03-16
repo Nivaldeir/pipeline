@@ -61,7 +61,7 @@ export default function LoginPage() {
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-foreground/20">
               <span className="text-sm font-bold text-primary-foreground">co</span>
             </div>
-            <span className="font-semibold text-lg">coManager</span>
+            <span className="font-semibold text-lg">TATICCA Pipeline</span>
           </Link>
           
           <div className="mt-16 max-w-sm">

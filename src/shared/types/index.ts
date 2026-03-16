@@ -34,6 +34,10 @@ export interface Project {
   estimatedDeadline?: Date;
   estimatedBudget?: number;
   projectType: string;
+  targetAudience?: string;
+  expectedUsers?: string;
+  urgency?: string;
+  features?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -117,9 +121,9 @@ export const STATUS_CONFIG: Record<
   { label: string; color: string }
 > = {
   backlog: { label: "Backlog", color: "bg-muted" },
-  todo: { label: "A Fazer", color: "bg-blue-500/20" },
-  "in-progress": { label: "Em Desenvolvimento", color: "bg-amber-500/20" },
-  review: { label: "Em Revisão", color: "bg-purple-500/20" },
+  todo: { label: "Arquitetura", color: "bg-blue-500/20" },
+  "in-progress": { label: "Em Desenvolvimento", color: "bg-green-500/50" },
+  review: { label: "Em Revisão", color: "bg-yellow-500/50" },
   completed: { label: "Concluído", color: "bg-emerald-500/20" },
 };
 

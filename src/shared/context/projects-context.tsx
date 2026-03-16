@@ -21,7 +21,7 @@ interface ProjectsContextType {
   requests: ProjectRequest[];
   activityLogs: ActivityLog[];
   isLoading: boolean;
-  addProject: (project: Omit<Project, "id" | "createdAt" | "updatedAt">) => Promise<void>;
+  addProject: (project: Omit<Project, "id" | "createdAt" | "updatedAt">) => Promise<string>;
   updateProject: (id: string, updates: Partial<Project>) => void;
   moveProject: (id: string, status: ProjectStatus) => void;
   addRequest: (request: Omit<ProjectRequest, "id" | "createdAt">) => void;
@@ -46,6 +46,10 @@ function mapProject(p: {
   developerId?: string | null;
   projectType: string;
   estimatedDeadline?: Date | null;
+  targetAudience?: string | null;
+  expectedUsers?: string | null;
+  urgency?: string | null;
+  features?: string[] | null;
   createdAt: Date;
   updatedAt: Date;
 }): Project {
@@ -59,6 +63,10 @@ function mapProject(p: {
     developerId: p.developerId ?? undefined,
     projectType: p.projectType,
     estimatedDeadline: p.estimatedDeadline ?? undefined,
+    targetAudience: p.targetAudience ?? undefined,
+    expectedUsers: p.expectedUsers ?? undefined,
+    urgency: p.urgency ?? undefined,
+    features: p.features ?? [],
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
   };
@@ -117,7 +125,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
   const addProject = useCallback(
     async (project: Omit<Project, "id" | "createdAt" | "updatedAt">) => {
-      await createProject.mutateAsync({
+      const created = await createProject.mutateAsync({
         title: project.title,
         description: project.description,
         status: project.status,
@@ -126,7 +134,12 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
         developerId: project.developerId,
         projectType: project.projectType?.trim() || "Outro",
         estimatedDeadline: project.estimatedDeadline,
+        targetAudience: project.targetAudience,
+        expectedUsers: project.expectedUsers,
+        urgency: project.urgency,
+        features: project.features,
       });
+      return created.id as string;
     },
     [createProject]
   );

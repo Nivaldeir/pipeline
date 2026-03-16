@@ -1,36 +1,40 @@
 "use client";
 
-import { useState } from "react";
 import { useAuth } from "@/shared/context/auth-context";
 import { useProjects } from "@/shared/context/projects-context";
 import { KanbanBoard } from "@/shared/components";
 import type { Project, ProjectStatus } from "@/shared/types";
-import { STATUS_CONFIG, PRIORITY_CONFIG } from "@/shared/types";
-import { formatDate } from "@/shared/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/src/shared/components/ui/dialog";
-import { Badge } from "@/src/shared/components/ui/badge";
-import { ScrollArea } from "@/src/shared/components/ui/scroll-area";
-import { Separator } from "@/src/shared/components/ui/separator";
-import { Calendar, User, FileText, Clock } from "lucide-react";
+import { STATUS_CONFIG } from "@/shared/types";
+import { useModal } from "@/shared/context/modal-context";
+import { ProjectDetailsModal } from "../admin/projetos/_components/project-details.modal";
+import { User } from "lucide-react";
 
 export default function ClienteDashboard() {
   const { user } = useAuth();
   const { projects } = useProjects();
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const { openModal } = useModal();
 
   const clientProjects = projects;
+
+  const visibleColumns: ProjectStatus[] = ["backlog", "in-progress", "completed"];
 
   const stats = {
     total: clientProjects.length,
     backlog: clientProjects.filter((p) => p.status === "backlog").length,
     inProgress: clientProjects.filter((p) => p.status === "in-progress").length,
     completed: clientProjects.filter((p) => p.status === "completed").length,
+  };
+
+  const handleProjectClick = (project: Project) => {
+    openModal(
+      `project-details-${project.id}`,
+      ProjectDetailsModal,
+      { project },
+      {
+        size: "md",
+        position: "center",
+      }
+    );
   };
 
   return (
@@ -67,92 +71,11 @@ export default function ClienteDashboard() {
       <div className="rounded-lg border border-border bg-card/50 p-4">
         <KanbanBoard
           projects={clientProjects}
-          onProjectClick={setSelectedProject}
+          onProjectClick={handleProjectClick}
           canDrag={false}
+          visibleColumns={visibleColumns}
         />
       </div>
-
-      {/* Modal de detalhes do projeto */}
-      <Dialog
-        open={!!selectedProject}
-        onOpenChange={() => setSelectedProject(null)}
-      >
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{selectedProject?.title}</DialogTitle>
-            <DialogDescription>Detalhes do projeto</DialogDescription>
-          </DialogHeader>
-
-          {selectedProject && (
-            <ScrollArea className="max-h-[60vh]">
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <Badge
-                    variant="secondary"
-                    className={STATUS_CONFIG[selectedProject.status].color}
-                  >
-                    {STATUS_CONFIG[selectedProject.status].label}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className={PRIORITY_CONFIG[selectedProject.priority].color}
-                  >
-                    {PRIORITY_CONFIG[selectedProject.priority].label}
-                  </Badge>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <FileText className="h-4 w-4 mt-1 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Descrição</p>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedProject.description}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Data de Criação</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatDate(selectedProject.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {selectedProject.estimatedDeadline && (
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">Prazo Estimado</p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatDate(selectedProject.estimatedDeadline)}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedProject.developerId && (
-                    <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">Desenvolvedor</p>
-                        <p className="text-sm text-muted-foreground">
-                          Desenvolvedor Atribuído
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </ScrollArea>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
