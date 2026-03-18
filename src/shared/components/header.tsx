@@ -19,13 +19,22 @@ export function Header() {
   const { user, logout, isAuthenticated } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary shadow-sm">
-            <span className="text-primary-foreground font-bold text-sm">co</span>
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex min-w-0 items-center gap-2.5 shrink-0">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary shadow-sm">
+            <span className="text-primary-foreground font-bold text-sm tracking-tight">
+              co
+            </span>
           </div>
-          <span className="font-semibold text-lg">TATICCA Pipeline</span>
+          <div className="min-w-0">
+            <span className="block truncate text-base font-semibold leading-none">
+              Pipeline
+            </span>
+            <span className="hidden text-xs text-muted-foreground sm:block">
+              Gestão de projetos e operações
+            </span>
+          </div>
         </Link>
 
         <div className="flex items-center gap-4">
@@ -33,7 +42,11 @@ export function Header() {
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full border border-transparent p-0 hover:border-border"
+                    aria-label="Abrir menu do usuário"
+                  >
                     <Avatar className="h-9 w-9">
                       <AvatarFallback className="bg-primary text-primary-foreground">
                         {getInitials(user.name)}
