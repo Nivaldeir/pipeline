@@ -121,9 +121,9 @@ export default function RegisterPage() {
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary shadow-sm">
-              <span className="text-primary-foreground font-bold text-sm">co</span>
+              <span className="text-primary-foreground font-bold text-sm">T</span>
             </div>
-            <span className="font-semibold text-lg">Pipeline</span>
+            <span className="font-semibold text-lg">TATICCA Pipeline</span>
           </Link>
           <p className="text-sm text-muted-foreground">
             Já tem uma conta?{" "}

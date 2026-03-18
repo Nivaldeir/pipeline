@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/src/shared/components/ui/button";
-import { ArrowRight, Calculator, Bot, Code } from "lucide-react";
+import { ArrowRight, Workflow, Bot, GaugeCircle } from "lucide-react";
 
 export function HeroSection() {
   return (
@@ -12,31 +12,33 @@ export function HeroSection() {
         <div className="mx-auto max-w-3xl text-center">
           <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs sm:text-sm font-medium text-foreground/90 shadow-sm">
             <span className="h-2 w-2 shrink-0 rounded-full bg-primary animate-pulse" />
-            <span className="truncate">Contabilidade · RPA · Desenvolvimento</span>
+            <span className="truncate">
+              TATICCA · Gestão de automações e projetos
+            </span>
           </div>
 
           <h1 className="mb-5 sm:mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-balance leading-[1.1]">
-            Soluções completas para{" "}
+            Organize o pipeline das{" "}
             <span className="text-primary bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              automatizar seu negócio
+              suas automações
             </span>
           </h1>
 
           <p className="mb-8 sm:mb-10 text-base text-muted-foreground sm:text-lg md:text-xl text-pretty max-w-2xl mx-auto leading-relaxed">
-            Contabilidade especializada, automação de processos com RPA e
-            desenvolvimento de sistemas sob medida. Tudo em um só lugar para
-            impulsionar sua empresa.
+            Centralize demandas de RPA, integrações e desenvolvimentos em um
+            único quadro Kanban. Priorize, acompanhe status e mantenha
+            visibilidade de ponta a ponta sobre o ciclo de vida das automações.
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4">
             <Button size="lg" asChild className="shadow-lg shadow-primary/20">
               <Link href="/login" className="gap-2">
-                Solicitar Serviço
+                Solicitar automação
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="border-2">
-              <Link href="/login">Acessar Plataforma</Link>
+              <Link href="/login">Acessar painel de automações</Link>
             </Button>
           </div>
         </div>
@@ -44,19 +46,19 @@ export function HeroSection() {
         <div className="mt-14 sm:mt-20 grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-3">
           {[
             {
-              icon: Calculator,
-              title: "Contabilidade",
-              desc: "Gestão fiscal, folha de pagamento e obrigações",
-            },
-            {
               icon: Bot,
               title: "RPA",
-              desc: "Automação de processos repetitivos e integração",
+              desc: "Orquestre e monitore robôs, filas e execuções",
             },
             {
-              icon: Code,
-              title: "Desenvolvimento",
-              desc: "Sistemas web, apps e APIs personalizados",
+              icon: Workflow,
+              title: "Pipeline de demandas",
+              desc: "Controle backlog, em desenvolvimento e entregues em um único fluxo",
+            },
+            {
+              icon: GaugeCircle,
+              title: "Visibilidade em tempo real",
+              desc: "Acompanhe KPIs das automações e priorize o que gera mais impacto",
             },
           ].map(({ icon: Icon, title, desc }) => (
             <div

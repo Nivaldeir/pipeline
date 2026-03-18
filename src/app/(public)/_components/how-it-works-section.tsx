@@ -6,28 +6,28 @@ const steps = [
     step: "01",
     title: "Envie sua solicitação",
     description:
-      "Preencha o formulário com os detalhes do seu projeto. Quanto mais informações, melhor entenderemos sua necessidade.",
+      "Preencha o formulário com os detalhes da automação ou projeto. Quanto mais informações, melhor entenderemos sua necessidade.",
   },
   {
     icon: Search,
     step: "02",
     title: "Análise da proposta",
     description:
-      "Nossa equipe analisa a solicitação e entra em contato para alinhar escopo, prazo e orçamento.",
+      "Nossa equipe analisa a solicitação e entra em contato para alinhar escopo, priorização, prazo e orçamento.",
   },
   {
     icon: Code,
     step: "03",
-    title: "Desenvolvimento",
+    title: "Construção da automação",
     description:
-      "Acompanhe cada etapa do desenvolvimento através do quadro Kanban com total transparência.",
+      "Acompanhe cada etapa pelo quadro Kanban: descoberta, desenvolvimento, testes e homologação das automações.",
   },
   {
     icon: CheckCircle,
     step: "04",
     title: "Entrega final",
     description:
-      "Projeto finalizado, testado e entregue. Documentação completa e suporte pós-entrega.",
+      "Automação em produção, monitorada e documentada. Suporte contínuo para ajustes e evolução.",
   },
 ];
 

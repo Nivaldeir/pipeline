@@ -19,25 +19,25 @@ const features = [
     icon: Calculator,
     title: "Contabilidade Completa",
     description:
-      "Gestao fiscal, folha de pagamento, balanco, DRE e todas as obrigacoes acessorias da sua empresa.",
+      "Gestão fiscal, folha de pagamento, balanço, DRE e todas as obrigações acessórias da sua empresa.",
   },
   {
     icon: FileCheck,
     title: "Obrigacoes em Dia",
     description:
-      "Geracao automatica de guias, SPED, ECF, ECD e demais declaracoes com prazo e conformidade.",
+      "Geração automática de guias, SPED, ECF, ECD e demais declarações com prazo e conformidade.",
   },
   {
     icon: Bot,
     title: "Automacao com RPA",
     description:
-      "Robos que automatizam tarefas repetitivas: leitura de notas, preenchimento de sistemas e validacoes.",
+      "Robôs que automatizam tarefas repetitivas: leitura de notas, preenchimento de sistemas e validações.",
   },
   {
     icon: RefreshCw,
     title: "Integracao de Sistemas",
     description:
-      "Conectamos seu ERP, banco, e-commerce e outros sistemas para eliminar retrabalho manual.",
+      "Conectamos seu ERP, bancos, e-commerces e outros sistemas para eliminar retrabalho manual.",
   },
   {
     icon: Code,
@@ -47,9 +47,9 @@ const features = [
   },
   {
     icon: Shield,
-    title: "Seguranca e Conformidade",
+    title: "Segurança e Conformidade",
     description:
-      "Dados protegidos com as melhores praticas de seguranca e total conformidade com LGPD.",
+      "Dados protegidos com as melhores práticas de segurança e total conformidade com a LGPD.",
   },
 ];
 
@@ -57,13 +57,14 @@ export function FeaturesSection() {
   return (
     <section id="funcionalidades" className="py-16 sm:py-24 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="mx-auto max-w-2xl text-center mb-12 sm:mb-16">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl mb-3 sm:mb-4">
-            Soluções integradas para sua empresa
+        <div className="mx-auto mb-12 max-w-2xl text-center sm:mb-16">
+          <h2 className="mb-3 text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl sm:mb-4">
+            Tudo o que você precisa para gerir automações
           </h2>
-          <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
-            Da contabilidade ao desenvolvimento de sistemas, oferecemos tudo que
-            você precisa para crescer.
+          <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Da identificação da demanda até a operação em produção, o Pipeline
+            ajuda sua equipe a organizar, priorizar e acompanhar automações,
+            integrações e projetos relacionados.
           </p>
         </div>
 

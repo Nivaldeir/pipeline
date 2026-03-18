@@ -7,7 +7,7 @@ export function Footer() {
         <div className="flex flex-col items-center gap-8 text-center md:flex-row md:justify-between md:text-left">
           <Link href="/" className="flex items-center gap-2.5 shrink-0 transition-opacity hover:opacity-90">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary shadow-sm">
-              <span className="text-sm font-bold text-primary-foreground">co</span>
+              <span className="text-sm font-bold text-primary-foreground">T</span>
             </div>
             <span className="font-semibold">TATICCA Pipeline</span>
           </Link>
