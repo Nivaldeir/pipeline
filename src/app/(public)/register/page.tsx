@@ -123,7 +123,7 @@ export default function RegisterPage() {
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary shadow-sm">
               <span className="text-primary-foreground font-bold text-sm">co</span>
             </div>
-            <span className="font-semibold text-lg">TATICCA Pipeline</span>
+            <span className="font-semibold text-lg">Pipeline</span>
           </Link>
           <p className="text-sm text-muted-foreground">
             Já tem uma conta?{" "}

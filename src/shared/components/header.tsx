@@ -14,6 +14,7 @@ import {
 } from "@/src/shared/components/ui/dropdown-menu";
 import { getInitials } from "@/shared/utils";
 import { LogOut, User, Settings } from "lucide-react";
+import Image from "next/image";
 
 export function Header() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -22,11 +23,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex min-w-0 items-center gap-2.5 shrink-0">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary shadow-sm">
-            <span className="text-primary-foreground font-bold text-sm tracking-tight">
-              co
-            </span>
-          </div>
+          <Image src="/logo.png" alt="Pipeline" width={36} height={36} />
           <div className="min-w-0">
             <span className="block truncate text-base font-semibold leading-none">
               Pipeline

@@ -11,6 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/src/shared/components/ui/sheet";
+import Image from "next/image";
 
 const navLinks = [
   { href: "#funcionalidades", label: "Funcionalidades" },
@@ -21,33 +22,34 @@ export function LandingHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-sm">
-      <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-90">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary shadow-sm">
-            <span className="text-sm font-bold text-primary-foreground">co</span>
-          </div>
-          <span className="font-semibold text-base sm:text-lg truncate">
-            TATICCA Pipeline
+    <header className="fixed top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-md supports-backdrop-filter:bg-background/80">
+      <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <Link
+          href="/"
+          className="flex min-w-0 shrink-0 items-center gap-2.5 transition-opacity hover:opacity-90"
+        >
+          <Image src="/logo.png" alt="Pipeline" width={36} height={36} />
+          <span className="truncate text-base font-semibold sm:text-lg">
+            Pipeline
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden items-center gap-6 md:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+              className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden h-9 w-9">
+              <Button variant="ghost" size="icon" className="h-9 w-9 md:hidden">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Menu</span>
               </Button>
@@ -62,7 +64,7 @@ export function LandingHeader() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {link.label}
                   </Link>
@@ -77,6 +79,7 @@ export function LandingHeader() {
               </nav>
             </SheetContent>
           </Sheet>
+
           <Button asChild size="sm" className="h-9 md:h-10 md:px-4 md:py-2">
             <Link href="/login">Entrar</Link>
           </Button>
