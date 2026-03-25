@@ -139,6 +139,26 @@ export const projectRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const client = await ctx.db.user.findUnique({ where: { id: input.clientId } });
+      if (!client) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cliente inválido (clientId não existe). Em ambiente local, rode o seed do Prisma ou selecione um cliente válido.",
+        });
+      }
+
+      if (input.developerId) {
+        const developer = await ctx.db.user.findUnique({ where: { id: input.developerId } });
+        if (!developer) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Desenvolvedor inválido (developerId não existe). Selecione um desenvolvedor válido.",
+          });
+        }
+      }
+
       const project = await ctx.db.project.create({
         data: {
           title: input.title,
