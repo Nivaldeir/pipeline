@@ -43,6 +43,13 @@ const URGENCY_LEVELS = [
 
 const TARGET_AUDIENCES = [
   { value: "b2b", label: "Empresas (B2B)" },
+  { value: "cliente", label: "Clientes" },
+  { value: "fornecedor", label: "Fornecedores" },
+  { value: "funcionario", label: "Funcionarios" },
+  { value: "financeira", label: "Instituições de Financeiras" },
+  { value: "transportadora", label: "Transportadoras" },
+  { value: "governo", label: "Instituições do governo" },
+  { value: "outro", label: "Outros" },
   { value: "b2c", label: "Consumidores finais (B2C)" },
   { value: "interno", label: "Uso interno da empresa" },
   { value: "ambos", label: "Empresas e consumidores" },

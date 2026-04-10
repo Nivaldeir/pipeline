@@ -14,8 +14,8 @@ import {
 } from "lucide-react";
 
 const clientLinks = [
-  { href: "/cliente", label: "Meus Projetos", icon: FolderKanban },
   { href: "/cliente/solicitar", label: "Solicitar Projeto", icon: PlusCircle },
+  { href: "/cliente", label: "Meus Projetos", icon: FolderKanban },
   { href: "/cliente/configuracoes", label: "Configurações", icon: Settings },
 ];
 

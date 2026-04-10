@@ -143,7 +143,7 @@ export default function SolicitarProjetoPage() {
     if (!user?.id) {
       toast({
         title: "Erro",
-        description: "Faça login para solicitar um projeto.",
+        description: "Faça login para solicitar um projeto.", 
         variant: "destructive",
       });
       return;
@@ -195,15 +195,15 @@ export default function SolicitarProjetoPage() {
 
       toast({
         title: "Solicitação enviada!",
-        description:
-          "Seu projeto foi criado, anexos enviados e está no backlog. Você pode acompanhar o andamento na página Meus Projetos.",
+        description:  
+          "Seu processo foi criado, anexos enviados e está no backlog. Você pode acompanhar o andamento na página Meus Projetos.",
       });
       router.push("/cliente");
     } catch {
       toast({
         title: "Erro ao salvar",
         description:
-          "Não foi possível criar o projeto. Tente novamente ou entre em contato.",
+          "Não foi possível criar o processo. Tente novamente ou entre em contato.",
         variant: "destructive",
       });
     } finally {
@@ -233,7 +233,7 @@ export default function SolicitarProjetoPage() {
           {/* Informacoes Basicas */}
           <Card>
             <CardHeader>
-              <CardTitle>Informacoes Basicas</CardTitle>
+              <CardTitle>Informações Básicas</CardTitle>
               <CardDescription>
                 Descreva o que voce precisa desenvolver
               </CardDescription>
@@ -241,21 +241,21 @@ export default function SolicitarProjetoPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="title">
-                  Nome do Projeto <span className="text-destructive">*</span>
+                  Nome do Processo <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  placeholder="Ex: Sistema de Gestao de Vendas, App de Delivery..."
+                  placeholder="Ex: Processo de Vendas, Processo de Delivery..."
                 />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="type">
-                    Tipo de Projeto <span className="text-destructive">*</span>
+                    Tipo de Processo <span className="text-destructive">*</span>
                   </Label>
                   <Select
                     value={formData.type}
@@ -298,20 +298,20 @@ export default function SolicitarProjetoPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="description">
-                  Descricao do Projeto <span className="text-destructive">*</span>
+                  Descrição do Processo <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Descreva o objetivo principal do projeto. O que ele deve fazer? Qual problema resolve?"
+                  placeholder="Descreva o objetivo principal do processo. O que ele deve fazer? Qual problema resolve?"
                   rows={5}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Anexos iniciais (opcional)</Label>
+                <Label>Anexos Iniciais (opcional)</Label>
                 <Input
                   ref={fileInputRef}
                   type="file"
@@ -331,15 +331,15 @@ export default function SolicitarProjetoPage() {
           {/* Publico e Usuarios */}
           <Card>
             <CardHeader>
-              <CardTitle>Publico-Alvo</CardTitle>
+              <CardTitle>Envolvidos no processo</CardTitle>
               <CardDescription>
-                Quem vai usar o sistema?
+                Quem está envolvido no processo?
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="targetAudience">Tipo de Publico</Label>
+                  <Label htmlFor="targetAudience">Setor Envolvido</Label>
                   <Select
                     value={formData.targetAudience}
                     onValueChange={(value) =>
@@ -361,7 +361,7 @@ export default function SolicitarProjetoPage() {
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="expectedUsers">Usuarios Esperados</Label>
+                    <Label htmlFor="expectedUsers">Número de Usuários</Label>
                     <Tooltip>
                       <TooltipTrigger>
                         <HelpCircle className="h-4 w-4 text-muted-foreground" />
@@ -376,7 +376,7 @@ export default function SolicitarProjetoPage() {
                     name="expectedUsers"
                     value={formData.expectedUsers}
                     onChange={handleChange}
-                    placeholder="Ex: 100-500 usuarios, 10 funcionarios..."
+                    placeholder="Ex: 100-500 pessoas, 10 funcionarios..."
                   />
                 </div>
               </div>
@@ -386,9 +386,9 @@ export default function SolicitarProjetoPage() {
           {/* Funcionalidades */}
           <Card>
             <CardHeader>
-              <CardTitle>Funcionalidades</CardTitle>
+              <CardTitle>Adicione as funcionalidades que a automação deverá contemplar</CardTitle>
               <CardDescription>
-                Adicione as funcionalidades que seu projeto precisa
+                Adicione as funcionalidades que a automação deverá contemplar
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -401,7 +401,7 @@ export default function SolicitarProjetoPage() {
                     value={newFeature}
                     onChange={(e) => setNewFeature(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Digite uma funcionalidade e pressione Enter"
+                    placeholder="Digite uma funcionalidade e pressione Enter para adicionar"
                   />
                   <Button
                     type="button"
@@ -417,7 +417,7 @@ export default function SolicitarProjetoPage() {
               {/* Funcionalidades adicionadas */}
               {formData.features.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Funcionalidades selecionadas</Label>
+                  <Label>Funcionalidades Selecionadas</Label>
                   <div className="flex flex-wrap gap-2">
                     {formData.features.map((feature) => (
                       <Badge
@@ -442,7 +442,7 @@ export default function SolicitarProjetoPage() {
               {/* Sugestoes */}
               <div className="space-y-2">
                 <Label className="text-muted-foreground text-sm">
-                  Sugestoes (clique para adicionar)
+                  Sugestões (clique para adicionar)
                 </Label>
                 <div className="flex flex-wrap gap-2">
                   {FEATURE_SUGGESTIONS.filter(
@@ -463,14 +463,14 @@ export default function SolicitarProjetoPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="projectNarrative">
-                  Escreva um texto descritivo do seu projeto
+                  Escreva um texto descritivo do seu processo
                 </Label>
                 <Textarea
                   id="projectNarrative"
                   name="projectNarrative"
                   value={formData.projectNarrative}
                   onChange={handleChange}
-                  placeholder="Conte, em suas palavras, como imagina o projeto, principais fluxos e cenarios de uso."
+                  placeholder="Conte, em suas palavras, como imagina o processo, principais fluxos e cenários de uso."
                   rows={4}
                 />
               </div>
@@ -480,14 +480,13 @@ export default function SolicitarProjetoPage() {
           {/* Sistema Existente */}
           <Card>
             <CardHeader>
-              <CardTitle>Sistema Atual</CardTitle>
+              <CardTitle>Processo Atual</CardTitle>
               <CardDescription>
                 Voce ja possui algum sistema ou e um projeto do zero?
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Ja possui sistema?</Label>
                 <Select
                   value={formData.hasExistingSystem}
                   onValueChange={(value) =>
@@ -511,32 +510,15 @@ export default function SolicitarProjetoPage() {
                   </SelectContent>
                 </Select>
               </div>
-
-              {formData.hasExistingSystem &&
-                formData.hasExistingSystem !== "nao" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="existingSystemDetails">
-                      Detalhes do sistema atual
-                    </Label>
-                    <Textarea
-                      id="existingSystemDetails"
-                      name="existingSystemDetails"
-                      value={formData.existingSystemDetails}
-                      onChange={handleChange}
-                      placeholder="Descreva o sistema atual, tecnologias utilizadas, o que funciona bem e o que precisa melhorar..."
-                      rows={3}
-                    />
-                  </div>
-                )}
             </CardContent>
           </Card>
 
           {/* Beneficios e economia */}
           <Card>
             <CardHeader>
-              <CardTitle>Beneficios esperados</CardTitle>
+              <CardTitle>Benefícios Esperados</CardTitle>
               <CardDescription>
-                Quais resultados voce espera atingir com este projeto?
+                Quais resultados voce espera atingir com este processo?
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -617,8 +599,8 @@ export default function SolicitarProjetoPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="benefitsDetails" className="text-sm">
-                  Descreva as economias e beneficios principais do seu projeto{" "}
-                  <span className="text-xs text-muted-foreground">(opcional)</span>
+                  Descreva as economias e beneficios principais do seu processo{" "} de uso.
+                  <span className="text-xs text-muted-foreground">(Opcional)</span>
                 </Label>
                 <Textarea
                   id="benefitsDetails"
@@ -637,7 +619,7 @@ export default function SolicitarProjetoPage() {
             <CardHeader>
               <CardTitle>Prazo</CardTitle>
               <CardDescription>
-                Quando voce precisa do projeto pronto?
+                Quando voce precisa do processo pronto? 
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -664,7 +646,7 @@ export default function SolicitarProjetoPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="deadline">Data Limite (opcional)</Label>
+                  <Label htmlFor="deadline">Data Limite (Opcional)</Label>
                   <Input
                     id="deadline"
                     name="deadline"
@@ -680,7 +662,7 @@ export default function SolicitarProjetoPage() {
           {/* Informacoes Adicionais */}
           <Card>
             <CardHeader>
-              <CardTitle>Informacoes Adicionais</CardTitle>
+              <CardTitle>Informações Adicionais</CardTitle>
               <CardDescription>
                 Algo mais que devemos saber?
               </CardDescription>
@@ -691,25 +673,25 @@ export default function SolicitarProjetoPage() {
                 name="additionalInfo"
                 value={formData.additionalInfo}
                 onChange={handleChange}
-                placeholder="Restricoes tecnicas, integracao com outros sistemas, requisitos de seguranca, informacoes sobre a empresa..."
+                placeholder="Restrições técnicas, integração com outros sistemas, requisitos de segurança, informações sobre a empresa..."
                 rows={4}
               />
             </CardContent>
           </Card>
 
-          {/* Chat inicial do projeto (apenas para apoio na solicitacao) */}
+          {/* Chat inicial do processo (apenas para apoio na solicitação) */}
           <Card>
             <CardHeader>
-              <CardTitle>Chat inicial do projeto</CardTitle>
+              <CardTitle>Chat inicial do processo</CardTitle>
               <CardDescription>
-                Use este espaco para anotar ideias, perguntas ou combinacoes antes de enviar a solicitacao.
+                Use este espaço para anotar ideias, perguntas ou combinações antes de enviar a solicitação.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="h-40 max-h-60 overflow-y-auto rounded-md border border-border/60 bg-muted/40 p-3 space-y-2 text-sm">
                 {chatMessages.length === 0 ? (
                   <p className="text-muted-foreground text-xs">
-                    Nenhuma mensagem ainda. Escreva a primeira mensagem abaixo.
+                    Nenhuma mensagem ainda. Escreva a primeira mensagem abaixo para começar o chat.
                   </p>
                 ) : (
                   chatMessages.map((msg) => (
@@ -747,7 +729,7 @@ export default function SolicitarProjetoPage() {
                 </Button>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Este chat e apenas um rascunho local para apoiar o preenchimento da solicitacao.
+                Este chat é apenas um rascunho local para apoiar o preenchimento da solicitação.
               </p>
             </CardContent>
           </Card>
