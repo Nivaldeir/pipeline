@@ -137,13 +137,3 @@ export const PRIORITY_CONFIG: Record<
   urgent: { label: "Urgente", color: "text-destructive font-semibold" },
 };
 
-export const PROJECT_TYPES = [
-  "Website Institucional",
-  "E-commerce",
-  "Aplicativo Mobile",
-  "Sistema Web",
-  "Landing Page",
-  "Dashboard",
-  "API / Backend",
-  "Outro",
-];

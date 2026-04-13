@@ -21,7 +21,6 @@ import { Separator } from "@/src/shared/components/ui/separator";
 import { Calendar, FileText, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
-// Colunas visíveis para desenvolvedores (sem backlog)
 const DEVELOPER_COLUMNS: ProjectStatus[] = [
   "todo",
   "in-progress",
@@ -34,14 +33,31 @@ export default function DesenvolvedorDashboard() {
   const { projects, moveProject } = useProjects();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  // Filtra projetos atribuídos ao desenvolvedor ou disponíveis
-  const devProjects = projects.filter((p) => p.status !== "backlog");
+  const assignedBacklog = projects.filter(
+    (p) =>
+      p.status === "backlog" &&
+      user?.id != null &&
+      p.developerId === user.id
+  );
 
-  // Calcula estatísticas
+  const hasAssignedBacklog = assignedBacklog.length > 0;
+  const visibleColumns: ProjectStatus[] = hasAssignedBacklog
+    ? (["backlog", ...DEVELOPER_COLUMNS] as ProjectStatus[])
+    : DEVELOPER_COLUMNS;
+
+  const devProjects = [
+    ...assignedBacklog,
+    ...projects.filter((p) => p.status !== "backlog"),
+  ];
+
   const stats = {
-    assigned: devProjects.filter((p) => p.developerId).length,
-    inProgress: devProjects.filter((p) => p.status === "in-progress").length,
-    review: devProjects.filter((p) => p.status === "review").length,
+    assigned: projects.filter((p) => p.developerId === user?.id).length,
+    inProgress: projects.filter(
+      (p) => p.developerId === user?.id && p.status === "in-progress"
+    ).length,
+    review: projects.filter(
+      (p) => p.developerId === user?.id && p.status === "review"
+    ).length,
   };
 
   const handleMoveProject = (projectId: string, newStatus: ProjectStatus) => {
@@ -86,8 +102,9 @@ export default function DesenvolvedorDashboard() {
       {/* Aviso */}
       <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 text-amber-500 text-sm">
         <AlertTriangle className="h-4 w-4 shrink-0" />
-        Arraste os cards entre as colunas para atualizar o status. Projetos no
-        Backlog só podem ser movidos pelo administrador.
+        Arraste os cards entre as colunas para atualizar o status. A coluna
+        Backlog mostra apenas projetos atribuídos a você; sair do Backlog
+        (para Arquitetura etc.) continua sendo feito pelo administrador.
       </div>
 
       {/* Kanban Board - Desenvolvedor pode arrastar */}
@@ -97,7 +114,7 @@ export default function DesenvolvedorDashboard() {
           onProjectClick={setSelectedProject}
           onMoveProject={handleMoveProject}
           canDrag={true}
-          visibleColumns={DEVELOPER_COLUMNS}
+          visibleColumns={visibleColumns}
         />
       </div>
 
@@ -170,27 +187,35 @@ export default function DesenvolvedorDashboard() {
 
                 {/* Ações rápidas de status */}
                 <div>
-                  <p className="text-sm font-medium mb-2">Alterar Status</p>
-                  <div className="flex flex-wrap gap-2">
-                    {DEVELOPER_COLUMNS.filter(
-                      (s) => s !== selectedProject.status
-                    ).map((status) => (
-                      <Button
-                        key={status}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          handleMoveProject(selectedProject.id, status);
-                          setSelectedProject({
-                            ...selectedProject,
-                            status,
-                          });
-                        }}
-                      >
-                        {STATUS_CONFIG[status].label}
-                      </Button>
-                    ))}
-                  </div>
+                  <p className="text-sm font-medium mb-2">Alterar status</p>
+                  {selectedProject.status === "backlog" ? (
+                    <p className="text-sm text-muted-foreground">
+                      Projetos no backlog só avançam quando um administrador
+                      alterar o status.
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {visibleColumns
+                        .filter((s) => s !== selectedProject.status)
+                        .filter((s) => s !== "backlog")
+                        .map((status) => (
+                          <Button
+                            key={status}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              handleMoveProject(selectedProject.id, status);
+                              setSelectedProject({
+                                ...selectedProject,
+                                status,
+                              });
+                            }}
+                          >
+                            {STATUS_CONFIG[status].label}
+                          </Button>
+                        ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </ScrollArea>

@@ -35,7 +35,16 @@ import {
   TooltipTrigger,
 } from "@/src/shared/components/ui/tooltip";
 
-import { PROJECT_TYPES, FEATURE_SUGGESTIONS, PLATFORMS, TARGET_AUDIENCES, URGENCY_LEVELS } from "./utils/solicitar.utils";
+import {
+  PROJECT_AREAS,
+  PROJECT_THEMES_BY_AREA,
+  buildClienteProjectTypeLabel,
+  PLATFORMS,
+  TARGET_AUDIENCES,
+  URGENCY_LEVELS,
+  FEATURE_SUGGESTION_GROUPS,
+  DEFAULT_PLATFORM_VALUE,
+} from "./utils/solicitar.utils";
 import { useFiles } from "@/shared/context/files-context";
 
 export default function SolicitarProjetoPage() {
@@ -48,8 +57,9 @@ export default function SolicitarProjetoPage() {
 
   const [formData, setFormData] = useState({
     title: "",
-    type: "",
-    platform: "",
+    projectArea: "",
+    projectTheme: "",
+    platform: DEFAULT_PLATFORM_VALUE,
     description: "",
     targetAudience: "",
     expectedUsers: "",
@@ -79,7 +89,12 @@ export default function SolicitarProjetoPage() {
   }
 
   function handleSelectChange(name: string, value: string) {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      if (name === "projectArea") {
+        return { ...prev, projectArea: value, projectTheme: "" };
+      }
+      return { ...prev, [name]: value };
+    });
   }
 
   function handleAddFeature(feature: string) {
@@ -148,7 +163,12 @@ export default function SolicitarProjetoPage() {
       });
       return;
     }
-    if (!formData.title || !formData.type || !formData.description) {
+    if (
+      !formData.title ||
+      !formData.projectArea ||
+      !formData.projectTheme ||
+      !formData.description
+    ) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos obrigatórios.",
@@ -159,6 +179,15 @@ export default function SolicitarProjetoPage() {
 
     setIsSubmitting(true);
     try {
+      const typeLabel = buildClienteProjectTypeLabel(
+        formData.projectArea,
+        formData.projectTheme
+      );
+      const platformLabel =
+        PLATFORMS.find((p) => p.value === formData.platform)?.label ??
+        formData.platform;
+      const projectTypeWithPlatform = `${typeLabel} · Plataforma: ${platformLabel}`;
+
       const projectId = await addProject({
         title: formData.title,
         description: formData.description,
@@ -172,7 +201,7 @@ export default function SolicitarProjetoPage() {
               : formData.urgency === "baixa"
                 ? "low"
                 : "medium",
-        projectType: formData.type || "Outro",
+        projectType: projectTypeWithPlatform,
         targetAudience: formData.targetAudience,
         expectedUsers: formData.expectedUsers,
         urgency: formData.urgency,
@@ -230,12 +259,12 @@ export default function SolicitarProjetoPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Informacoes Basicas */}
+          {/* Informações básicas */}
           <Card>
             <CardHeader>
               <CardTitle>Informações Básicas</CardTitle>
               <CardDescription>
-                Descreva o que voce precisa desenvolver
+                Descreva o que você precisa desenvolver
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -254,20 +283,22 @@ export default function SolicitarProjetoPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="type">
-                    Tipo de Processo <span className="text-destructive">*</span>
+                  <Label htmlFor="projectArea">
+                    Área <span className="text-destructive">*</span>
                   </Label>
                   <Select
-                    value={formData.type}
-                    onValueChange={(value) => handleSelectChange("type", value)}
+                    value={formData.projectArea}
+                    onValueChange={(value) =>
+                      handleSelectChange("projectArea", value)
+                    }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
+                      <SelectValue placeholder="Selecione a área" />
                     </SelectTrigger>
                     <SelectContent>
-                      {PROJECT_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
+                      {PROJECT_AREAS.map((a) => (
+                        <SelectItem key={a.value} value={a.value}>
+                          {a.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -275,25 +306,57 @@ export default function SolicitarProjetoPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="platform">Plataforma</Label>
+                  <Label htmlFor="projectTheme">
+                    Tema <span className="text-destructive">*</span>
+                  </Label>
                   <Select
-                    value={formData.platform}
+                    value={formData.projectTheme}
                     onValueChange={(value) =>
-                      handleSelectChange("platform", value)
+                      handleSelectChange("projectTheme", value)
                     }
+                    disabled={!formData.projectArea}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Onde vai funcionar?" />
+                      <SelectValue
+                        placeholder={
+                          formData.projectArea
+                            ? "Selecione o tema"
+                            : "Primeiro escolha a área"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      {PLATFORMS.map((platform) => (
-                        <SelectItem key={platform.value} value={platform.value}>
-                          {platform.label}
-                        </SelectItem>
-                      ))}
+                      {(PROJECT_THEMES_BY_AREA[formData.projectArea] ?? []).map(
+                        (t) => (
+                          <SelectItem key={t.value} value={t.value}>
+                            {t.label}
+                          </SelectItem>
+                        )
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="platform">Plataforma</Label>
+                <Select
+                  value={formData.platform}
+                  onValueChange={(value) =>
+                    handleSelectChange("platform", value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Onde vai funcionar?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PLATFORMS.map((platform) => (
+                      <SelectItem key={platform.value} value={platform.value}>
+                        {platform.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -328,7 +391,7 @@ export default function SolicitarProjetoPage() {
             </CardContent>
           </Card>
 
-          {/* Publico e Usuarios */}
+          {/* Público e usuários */}
           <Card>
             <CardHeader>
               <CardTitle>Envolvidos no processo</CardTitle>
@@ -367,7 +430,7 @@ export default function SolicitarProjetoPage() {
                         <HelpCircle className="h-4 w-4 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Estimativa de quantas pessoas vao usar o sistema</p>
+                        <p>Estimativa de quantas pessoas vão usar o sistema</p>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -376,7 +439,7 @@ export default function SolicitarProjetoPage() {
                     name="expectedUsers"
                     value={formData.expectedUsers}
                     onChange={handleChange}
-                    placeholder="Ex: 100-500 pessoas, 10 funcionarios..."
+                    placeholder="Ex.: 100–500 pessoas, 10 funcionários..."
                   />
                 </div>
               </div>
@@ -439,26 +502,36 @@ export default function SolicitarProjetoPage() {
                 </div>
               )}
 
-              {/* Sugestoes */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label className="text-muted-foreground text-sm">
-                  Sugestões (clique para adicionar)
+                  Sugestões por categoria (clique para adicionar)
                 </Label>
-                <div className="flex flex-wrap gap-2">
-                  {FEATURE_SUGGESTIONS.filter(
+                {FEATURE_SUGGESTION_GROUPS.map((group) => {
+                  const available = group.items.filter(
                     (s) => !formData.features.includes(s)
-                  ).map((suggestion) => (
-                    <Badge
-                      key={suggestion}
-                      variant="outline"
-                      className="cursor-pointer hover:bg-accent transition-colors"
-                      onClick={() => handleAddFeature(suggestion)}
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      {suggestion}
-                    </Badge>
-                  ))}
-                </div>
+                  );
+                  if (available.length === 0) return null;
+                  return (
+                    <div key={group.category} className="space-y-2">
+                      <p className="text-xs font-semibold text-foreground/80">
+                        {group.category}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {available.map((suggestion) => (
+                          <Badge
+                            key={suggestion}
+                            variant="outline"
+                            className="cursor-pointer hover:bg-accent transition-colors"
+                            onClick={() => handleAddFeature(suggestion)}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            {suggestion}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="space-y-2">
@@ -482,7 +555,7 @@ export default function SolicitarProjetoPage() {
             <CardHeader>
               <CardTitle>Processo Atual</CardTitle>
               <CardDescription>
-                Voce ja possui algum sistema ou e um projeto do zero?
+                Você já possui algum sistema ou é um projeto do zero?
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -497,7 +570,7 @@ export default function SolicitarProjetoPage() {
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="nao">Nao, projeto do zero</SelectItem>
+                    <SelectItem value="nao">Não, projeto do zero</SelectItem>
                     <SelectItem value="sim-substituir">
                       Sim, quero substituir
                     </SelectItem>
@@ -518,7 +591,7 @@ export default function SolicitarProjetoPage() {
             <CardHeader>
               <CardTitle>Benefícios Esperados</CardTitle>
               <CardDescription>
-                Quais resultados voce espera atingir com este processo?
+                Quais resultados você espera atingir com este processo?
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -531,7 +604,7 @@ export default function SolicitarProjetoPage() {
                     }
                   />
                   <span className="text-sm">
-                    Reducao de trabalho operacional (tarefas manuais, planilhas, retrabalho)
+                    Redução de trabalho operacional (tarefas manuais, planilhas, retrabalho)
                   </span>
                 </label>
 
@@ -543,7 +616,7 @@ export default function SolicitarProjetoPage() {
                     }
                   />
                   <span className="text-sm">
-                    Melhor relacionamento com o cliente (experiencia, atendimento, rapidez)
+                    Melhor relacionamento com o cliente (experiência, atendimento, rapidez)
                   </span>
                 </label>
 
@@ -560,7 +633,7 @@ export default function SolicitarProjetoPage() {
                     }
                   />
                   <span className="text-sm">
-                    Melhor relacionamento com fornecedores ou parceiros de negocio
+                    Melhor relacionamento com fornecedores ou parceiros de negócio
                   </span>
                 </label>
 
@@ -572,7 +645,7 @@ export default function SolicitarProjetoPage() {
                     }
                   />
                   <span className="text-sm">
-                    Reducao de multas, riscos ou infracoes (fiscais, regulatorias, contratuais)
+                    Redução de multas, riscos ou infrações (fiscais, regulatórias, contratuais)
                   </span>
                 </label>
 
@@ -584,7 +657,7 @@ export default function SolicitarProjetoPage() {
                     }
                   />
                   <span className="text-sm">
-                    Melhoria da qualidade do trabalho (padronizacao, menos erros, mais visibilidade)
+                    Melhoria da qualidade do trabalho (padronização, menos erros, mais visibilidade)
                   </span>
                 </label>
 
@@ -599,15 +672,15 @@ export default function SolicitarProjetoPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="benefitsDetails" className="text-sm">
-                  Descreva as economias e beneficios principais do seu processo{" "} de uso.
-                  <span className="text-xs text-muted-foreground">(Opcional)</span>
+                  Descreva as economias e benefícios principais do seu processo de uso.{" "}
+                  <span className="text-xs text-muted-foreground">(opcional)</span>
                 </Label>
                 <Textarea
                   id="benefitsDetails"
                   name="benefitsDetails"
                   value={formData.benefitsDetails}
                   onChange={handleChange}
-                  placeholder="Ex: reducao de X horas por semana, queda de X% em retrabalho, melhoria na satisfacao do cliente, etc."
+                  placeholder="Ex.: redução de X horas por semana, queda de X% em retrabalho, melhoria na satisfação do cliente, etc."
                   rows={4}
                 />
               </div>
@@ -619,13 +692,13 @@ export default function SolicitarProjetoPage() {
             <CardHeader>
               <CardTitle>Prazo</CardTitle>
               <CardDescription>
-                Quando voce precisa do processo pronto? 
+                Quando você precisa do processo pronto?
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="urgency">Nivel de Urgencia</Label>
+                  <Label htmlFor="urgency">Nível de urgência</Label>
                   <Select
                     value={formData.urgency}
                     onValueChange={(value) =>
@@ -659,7 +732,7 @@ export default function SolicitarProjetoPage() {
             </CardContent>
           </Card>
 
-          {/* Informacoes Adicionais */}
+          {/* Informações adicionais */}
           <Card>
             <CardHeader>
               <CardTitle>Informações Adicionais</CardTitle>
@@ -734,7 +807,7 @@ export default function SolicitarProjetoPage() {
             </CardContent>
           </Card>
 
-          {/* Botoes */}
+          {/* Botões */}
           <div className="flex justify-end gap-4">
             <Link href="/cliente">
               <Button type="button" variant="outline">
@@ -747,7 +820,7 @@ export default function SolicitarProjetoPage() {
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  Enviar Solicitacao
+                  Enviar solicitação
                 </>
               )}
             </Button>

@@ -26,7 +26,11 @@ import {
   projectRequestSchema,
   type ProjectRequestFormData,
 } from "@/shared/schema/project-request";
-import { PROJECT_TYPES } from "@/shared/types";
+import {
+  LANDING_PROJECT_AREAS,
+  LANDING_THEMES_BY_AREA,
+  buildLandingProjectTypeLabel,
+} from "@/shared/constants/project-taxonomy";
 import { useProjects } from "@/shared/context/projects-context";
 import { useToast } from "@/src/shared/hooks/use-toast";
 import { Send, CheckCircle } from "lucide-react";
@@ -42,7 +46,8 @@ export function RequestFormSection() {
       name: "",
       email: "",
       company: "",
-      projectType: "",
+      projectArea: "",
+      projectTheme: "",
       description: "",
       estimatedDeadline: "",
       estimatedBudget: "",
@@ -50,7 +55,18 @@ export function RequestFormSection() {
   });
 
   async function onSubmit(data: ProjectRequestFormData) {
-    addRequest(data);
+    addRequest({
+      name: data.name,
+      email: data.email,
+      company: data.company,
+      projectType: buildLandingProjectTypeLabel(
+        data.projectArea,
+        data.projectTheme
+      ),
+      description: data.description,
+      estimatedDeadline: data.estimatedDeadline,
+      estimatedBudget: data.estimatedBudget,
+    });
     toast({
       title: "Solicitação recebida",
       description:
@@ -162,23 +178,26 @@ export function RequestFormSection() {
 
                   <FormField
                     control={form.control}
-                    name="projectType"
+                    name="projectArea"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tipo de Projeto</FormLabel>
+                        <FormLabel>Área</FormLabel>
                         <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          onValueChange={(v) => {
+                            field.onChange(v);
+                            form.setValue("projectTheme", "");
+                          }}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecione o tipo" />
+                              <SelectValue placeholder="Selecione a área" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {PROJECT_TYPES.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
+                            {LANDING_PROJECT_AREAS.map((a) => (
+                              <SelectItem key={a.value} value={a.value}>
+                                {a.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -186,6 +205,44 @@ export function RequestFormSection() {
                         <FormMessage />
                       </FormItem>
                     )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="projectTheme"
+                    render={({ field }) => {
+                      const themes =
+                        LANDING_THEMES_BY_AREA[form.watch("projectArea")] ?? [];
+                      return (
+                        <FormItem>
+                          <FormLabel>Tema</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            disabled={!form.watch("projectArea")}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={
+                                    form.watch("projectArea")
+                                      ? "Selecione o tema"
+                                      : "Primeiro escolha a área"
+                                  }
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {themes.map((t) => (
+                                <SelectItem key={t.value} value={t.value}>
+                                  {t.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </div>
 
