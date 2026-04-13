@@ -37,6 +37,7 @@ model User {
   files            ProjectFile[]
   notifications    Notification[]
   activityLogs     ActivityLog[]
+  phaseTasks       PhaseTask[]
   sessions         Session[]
   accounts         Account[]
 
@@ -153,6 +154,7 @@ model Project {
   developer    User?            @relation("ProjectDeveloper", fields: [developerId], references: [id])
   developerId  String?
   features     ProjectFeature[]
+  phases       ProjectPhase[]
   tasks        Task[]
   comments     Comment[]
   files        ProjectFile[]
@@ -234,6 +236,42 @@ enum Priority {
   MEDIUM
   HIGH
   URGENT
+}
+
+// ==========================================
+// FASES E TAREFAS DE ESPECIFICACAO
+// ==========================================
+
+model ProjectPhase {
+  id             String      @id @default(cuid())
+  name           String
+  description    String?
+  order          Int         @default(0)
+  estimatedHours Float       @default(0)
+  projectId      String
+  project        Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks          PhaseTask[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("project_phases")
+}
+
+model PhaseTask {
+  id             String       @id @default(cuid())
+  title          String
+  description    String?
+  estimatedHours Float        @default(0)
+  order          Int          @default(0)
+  completedAt    DateTime?
+  phaseId        String
+  phase          ProjectPhase @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  assigneeId     String?
+  assignee       User?        @relation(fields: [assigneeId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("phase_tasks")
 }
 
 // ==========================================

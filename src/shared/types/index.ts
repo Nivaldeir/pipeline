@@ -115,6 +115,45 @@ export interface ProjectRequest {
   createdAt: Date;
 }
 
+// Fase de especificação de projeto
+export interface PhaseTask {
+  id: string;
+  title: string;
+  description?: string;
+  estimatedHours: number;
+  order: number;
+  completedAt?: Date | string;
+  assigneeId?: string;
+  phaseId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ProjectPhase {
+  id: string;
+  name: string;
+  description?: string;
+  order: number;
+  estimatedHours: number;
+  projectId: string;
+  tasks: PhaseTask[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AISuggestedTask {
+  title: string;
+  description: string;
+  estimatedHours: number;
+}
+
+export interface AISuggestedPhase {
+  name: string;
+  description: string;
+  estimatedHours: number;
+  tasks: AISuggestedTask[];
+}
+
 // Configurações do Kanban
 export const STATUS_CONFIG: Record<
   ProjectStatus,

@@ -138,13 +138,22 @@ export function ProjectDetailsModal({
         >
           Fechar
         </Button>
-        <Button
-          variant="default"
-          className="cursor-pointer"
-          onClick={() => onClose()}
-        >
-          <Link href={`/projeto/${project.id}`}>Ver todos os detalhes</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={() => onClose()}
+          >
+            <Link href={`/admin/projetos/${project.id}/especificacao`}>Especificação</Link>
+          </Button>
+          <Button
+            variant="default"
+            className="cursor-pointer"
+            onClick={() => onClose()}
+          >
+            <Link href={`/projeto/${project.id}`}>Ver detalhes</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );
