@@ -6,12 +6,12 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import type { Comment } from "@/shared/types";
+import type { Comment, CommentVisibility } from "@/shared/types";
 import { trpc } from "@/shared/trpc/client";
 
 interface CommentsContextType {
   getCommentsByProject: (projectId: string) => Comment[];
-  addComment: (comment: Omit<Comment, "id" | "createdAt">) => void;
+  addComment: (comment: Omit<Comment, "id" | "createdAt"> & { visibility?: CommentVisibility }) => void;
   updateComment: (id: string, content: string) => void;
   deleteComment: (id: string) => void;
 }
@@ -36,10 +36,11 @@ export function CommentsProvider({ children }: { children: ReactNode }) {
     []
   );
   const addComment = useCallback(
-    (comment: Omit<Comment, "id" | "createdAt">) => {
+    (comment: Omit<Comment, "id" | "createdAt"> & { visibility?: CommentVisibility }) => {
       createComment.mutate({
         projectId: comment.projectId,
         content: comment.content,
+        visibility: comment.visibility ?? "GLOBAL",
       });
     },
     [createComment]
@@ -71,31 +72,37 @@ export function CommentsProvider({ children }: { children: ReactNode }) {
   );
 }
 
+function mapComment(c: Record<string, unknown>): Comment {
+  return {
+    id: c.id as string,
+    projectId: c.projectId as string,
+    userId: c.userId as string,
+    userName: c.userName as string,
+    userRole: c.userRole as Comment["userRole"],
+    content: c.content as string,
+    visibility: (c.visibility as CommentVisibility) ?? "GLOBAL",
+    createdAt: c.createdAt instanceof Date ? c.createdAt : new Date(c.createdAt as string),
+    updatedAt: c.updatedAt
+      ? c.updatedAt instanceof Date
+        ? c.updatedAt
+        : new Date(c.updatedAt as string)
+      : undefined,
+  };
+}
+
 export function useComments(projectId?: string) {
   const context = useContext(CommentsContext);
   if (context === undefined) {
     throw new Error("useComments deve ser usado dentro de CommentsProvider");
   }
   const { data: commentsData = [] } = trpc.comment.byProject.useQuery(
-    { projectId: projectId ?? "" },
+    { projectId: projectId ?? "", visibility: "ALL" },
     { enabled: !!projectId }
   );
   const comments: Comment[] = Array.isArray(commentsData)
-    ? (commentsData as Array<Record<string, unknown>>).map((c) => ({
-        id: c.id as string,
-        projectId: c.projectId as string,
-        userId: c.userId as string,
-        userName: c.userName as string,
-        userRole: c.userRole as Comment["userRole"],
-        content: c.content as string,
-        createdAt: c.createdAt instanceof Date ? c.createdAt : new Date(c.createdAt as string),
-        updatedAt: c.updatedAt
-          ? c.updatedAt instanceof Date
-            ? c.updatedAt
-            : new Date(c.updatedAt as string)
-          : undefined,
-      }))
+    ? (commentsData as Array<Record<string, unknown>>).map(mapComment)
     : [];
+
   return {
     ...context,
     comments: projectId ? comments : [],

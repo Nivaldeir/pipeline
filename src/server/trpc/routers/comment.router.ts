@@ -3,10 +3,18 @@ import { router, publicProcedure, protectedProcedure } from "../trpc";
 
 export const commentRouter = router({
   byProject: publicProcedure
-    .input(z.object({ projectId: z.string() }))
+    .input(
+      z.object({
+        projectId: z.string(),
+        visibility: z.enum(["GLOBAL", "INTERNAL", "ALL"]).default("ALL"),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const comments = await ctx.db.comment.findMany({
-        where: { projectId: input.projectId },
+        where: {
+          projectId: input.projectId,
+          ...(input.visibility !== "ALL" ? { visibility: input.visibility } : {}),
+        },
         include: { user: { select: { id: true, name: true, role: true } } },
         orderBy: { createdAt: "asc" },
       });
@@ -17,6 +25,7 @@ export const commentRouter = router({
         userName: c.user.name,
         userRole: c.user.role.toLowerCase() as "client" | "developer" | "admin",
         content: c.content,
+        visibility: c.visibility,
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
       }));
@@ -27,6 +36,7 @@ export const commentRouter = router({
       z.object({
         projectId: z.string(),
         content: z.string().min(1),
+        visibility: z.enum(["GLOBAL", "INTERNAL"]).default("GLOBAL"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -35,6 +45,7 @@ export const commentRouter = router({
           projectId: input.projectId,
           userId: ctx.userId,
           content: input.content,
+          visibility: input.visibility,
         },
         include: { user: { select: { name: true, role: true } } },
       });
@@ -45,6 +56,7 @@ export const commentRouter = router({
         userName: comment.user.name,
         userRole: comment.user.role.toLowerCase(),
         content: comment.content,
+        visibility: comment.visibility,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
       };
@@ -65,6 +77,7 @@ export const commentRouter = router({
         userName: comment.user.name,
         userRole: comment.user.role.toLowerCase(),
         content: comment.content,
+        visibility: comment.visibility,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
       };

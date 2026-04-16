@@ -262,6 +262,7 @@ model PhaseTask {
   title          String
   description    String?
   estimatedHours Float        @default(0)
+  hoursWorked    Float        @default(0)
   order          Int          @default(0)
   completedAt    DateTime?
   phaseId        String
@@ -311,10 +312,11 @@ enum TaskStatus {
 // ==========================================
 
 model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String            @id @default(cuid())
+  content    String
+  visibility CommentVisibility @default(GLOBAL)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
 
   // Relacionamentos
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -323,6 +325,11 @@ model Comment {
   userId    String
 
   @@map("comments")
+}
+
+enum CommentVisibility {
+  GLOBAL   // visivel para cliente, admin e dev
+  INTERNAL // visivel apenas para admin e dev
 }
 
 // ==========================================
@@ -393,6 +400,50 @@ model ActivityLog {
   userId    String
 
   @@map("activity_logs")
+}
+
+// ==========================================
+// TAXONOMIA CONFIGURAVEL (AREAS E TEMAS)
+// ==========================================
+
+model ProjectArea {
+  id        String         @id @default(cuid())
+  name      String
+  slug      String         @unique
+  isActive  Boolean        @default(true)
+  order     Int            @default(0)
+  themes    ProjectTheme[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("project_areas")
+}
+
+model ProjectTheme {
+  id        String      @id @default(cuid())
+  name      String
+  slug      String
+  isActive  Boolean     @default(true)
+  order     Int         @default(0)
+  areaId    String
+  area      ProjectArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([slug, areaId])
+  @@map("project_themes")
+}
+
+model FeatureSuggestion {
+  id        String   @id @default(cuid())
+  label     String
+  areaSlug  String   // vinculado ao slug da area
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("feature_suggestions")
 }
 
 // ==========================================

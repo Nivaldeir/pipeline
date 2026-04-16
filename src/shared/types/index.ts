@@ -78,6 +78,8 @@ export interface ActivityLog {
 }
 
 // Comentário do projeto
+export type CommentVisibility = "GLOBAL" | "INTERNAL";
+
 export interface Comment {
   id: string;
   projectId: string;
@@ -85,6 +87,7 @@ export interface Comment {
   userName: string;
   userRole: UserRole;
   content: string;
+  visibility: CommentVisibility;
   attachments?: ProjectFile[];
   createdAt: Date;
   updatedAt?: Date;
@@ -121,6 +124,7 @@ export interface PhaseTask {
   title: string;
   description?: string;
   estimatedHours: number;
+  hoursWorked: number;
   order: number;
   completedAt?: Date | string;
   assigneeId?: string;

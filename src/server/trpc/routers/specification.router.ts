@@ -150,6 +150,7 @@ export const specificationRouter = router({
         title: z.string().min(1).optional(),
         description: z.string().nullable().optional(),
         estimatedHours: z.number().min(0).optional(),
+        hoursWorked: z.number().min(0).optional(),
         order: z.number().int().optional(),
         assigneeId: z.string().nullable().optional(),
       })
@@ -161,6 +162,29 @@ export const specificationRouter = router({
         data,
         include: {
           assignee: { select: { id: true, name: true, email: true } },
+        },
+      });
+      return task;
+    }),
+
+  // Dev registra horas trabalhadas em uma tarefa
+  logHours: protectedProcedure
+    .input(z.object({ id: z.string(), hoursWorked: z.number().min(0) }))
+    .mutation(async ({ ctx, input }) => {
+      const task = await ctx.db.phaseTask.update({
+        where: { id: input.id },
+        data: { hoursWorked: input.hoursWorked },
+        include: {
+          phase: { select: { projectId: true, name: true } },
+          assignee: { select: { id: true, name: true, email: true } },
+        },
+      });
+      await ctx.db.activityLog.create({
+        data: {
+          projectId: task.phase.projectId,
+          userId: ctx.userId,
+          action: "Horas registradas na tarefa",
+          details: `${task.phase.name} → ${task.title}: ${input.hoursWorked}h`,
         },
       });
       return task;

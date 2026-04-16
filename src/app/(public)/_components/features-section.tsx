@@ -23,19 +23,19 @@ const features = [
   },
   {
     icon: FileCheck,
-    title: "Obrigacoes em Dia",
+    title: "Obrigações em Dia",
     description:
       "Geração automática de guias, SPED, ECF, ECD e demais declarações com prazo e conformidade.",
   },
   {
     icon: Bot,
-    title: "Automacao com RPA",
+    title: "Automação com RPA",
     description:
       "Robôs que automatizam tarefas repetitivas: leitura de notas, preenchimento de sistemas e validações.",
   },
   {
     icon: RefreshCw,
-    title: "Integracao de Sistemas",
+    title: "Integração de Sistemas",
     description:
       "Conectamos seu ERP, bancos, e-commerces e outros sistemas para eliminar retrabalho manual.",
   },

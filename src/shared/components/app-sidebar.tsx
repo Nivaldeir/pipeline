@@ -8,9 +8,9 @@ import {
   LayoutDashboard,
   FolderKanban,
   Users,
-  FileText,
   Settings,
   PlusCircle,
+  Tag,
 } from "lucide-react";
 
 const clientLinks = [
@@ -23,11 +23,13 @@ const developerLinks = [
   { href: "/desenvolvedor", label: "Projetos", icon: FolderKanban },
   { href: "/desenvolvedor/configuracoes", label: "Configurações", icon: Settings },
 ];
+// Nota: o link para especificação do dev fica no card de cada projeto
 
 const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/projetos", label: "Projetos", icon: FolderKanban },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
+  { href: "/admin/configuracoes/categorias", label: "Categorias", icon: Tag },
   { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 

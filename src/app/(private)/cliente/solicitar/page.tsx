@@ -36,15 +36,12 @@ import {
 } from "@/src/shared/components/ui/tooltip";
 
 import {
-  PROJECT_AREAS,
-  PROJECT_THEMES_BY_AREA,
-  buildClienteProjectTypeLabel,
   PLATFORMS,
   TARGET_AUDIENCES,
   URGENCY_LEVELS,
-  FEATURE_SUGGESTION_GROUPS,
   DEFAULT_PLATFORM_VALUE,
 } from "./utils/solicitar.utils";
+import { useTaxonomy } from "./utils/use-taxonomy";
 import { useFiles } from "@/shared/context/files-context";
 
 export default function SolicitarProjetoPage() {
@@ -54,6 +51,7 @@ export default function SolicitarProjetoPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { areas: PROJECT_AREAS, themesByArea: PROJECT_THEMES_BY_AREA, suggestionGroups: FEATURE_SUGGESTION_GROUPS, buildTypeLabel: buildClienteProjectTypeLabel } = useTaxonomy();
 
   const [formData, setFormData] = useState({
     title: "",

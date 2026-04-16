@@ -1,0 +1,271 @@
+import { z } from "zod";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { TRPCError } from "@trpc/server";
+
+export const taxonomyRouter = router({
+  // ==========================================
+  // AREAS
+  // ==========================================
+
+  listAreas: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.projectArea.findMany({
+      where: { isActive: true },
+      include: {
+        themes: {
+          where: { isActive: true },
+          orderBy: { order: "asc" },
+        },
+      },
+      orderBy: { order: "asc" },
+    });
+  }),
+
+  listAllAreas: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.projectArea.findMany({
+      include: {
+        themes: { orderBy: { order: "asc" } },
+      },
+      orderBy: { order: "asc" },
+    });
+  }),
+
+  createArea: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        slug: z.string().min(1).regex(/^[a-z0-9-]+$/, "Slug deve ter apenas letras minúsculas, números e hífens"),
+        order: z.number().int().default(0),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const exists = await ctx.db.projectArea.findUnique({ where: { slug: input.slug } });
+      if (exists) throw new TRPCError({ code: "CONFLICT", message: "Já existe uma área com este slug" });
+      return ctx.db.projectArea.create({ data: input, include: { themes: true } });
+    }),
+
+  updateArea: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1).optional(),
+        isActive: z.boolean().optional(),
+        order: z.number().int().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      return ctx.db.projectArea.update({ where: { id }, data, include: { themes: true } });
+    }),
+
+  deleteArea: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.projectArea.delete({ where: { id: input.id } });
+      return { success: true };
+    }),
+
+  // ==========================================
+  // TEMAS
+  // ==========================================
+
+  createTheme: protectedProcedure
+    .input(
+      z.object({
+        areaId: z.string(),
+        name: z.string().min(1),
+        slug: z.string().min(1).regex(/^[a-z0-9-]+$/, "Slug deve ter apenas letras minúsculas, números e hífens"),
+        order: z.number().int().default(0),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const exists = await ctx.db.projectTheme.findUnique({
+        where: { slug_areaId: { slug: input.slug, areaId: input.areaId } },
+      });
+      if (exists) throw new TRPCError({ code: "CONFLICT", message: "Já existe um tema com este slug nesta área" });
+      return ctx.db.projectTheme.create({ data: input });
+    }),
+
+  updateTheme: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1).optional(),
+        isActive: z.boolean().optional(),
+        order: z.number().int().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      return ctx.db.projectTheme.update({ where: { id }, data });
+    }),
+
+  deleteTheme: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.projectTheme.delete({ where: { id: input.id } });
+      return { success: true };
+    }),
+
+  // ==========================================
+  // SUGESTOES DE FUNCIONALIDADES
+  // ==========================================
+
+  listSuggestions: publicProcedure
+    .input(z.object({ areaSlug: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.featureSuggestion.findMany({
+        where: {
+          isActive: true,
+          ...(input.areaSlug ? { areaSlug: input.areaSlug } : {}),
+        },
+        orderBy: [{ areaSlug: "asc" }, { order: "asc" }],
+      });
+    }),
+
+  listAllSuggestions: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.featureSuggestion.findMany({
+      orderBy: [{ areaSlug: "asc" }, { order: "asc" }],
+    });
+  }),
+
+  createSuggestion: protectedProcedure
+    .input(
+      z.object({
+        label: z.string().min(1),
+        areaSlug: z.string().min(1),
+        order: z.number().int().default(0),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.featureSuggestion.create({ data: input });
+    }),
+
+  updateSuggestion: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        label: z.string().min(1).optional(),
+        areaSlug: z.string().optional(),
+        isActive: z.boolean().optional(),
+        order: z.number().int().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      return ctx.db.featureSuggestion.update({ where: { id }, data });
+    }),
+
+  deleteSuggestion: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.featureSuggestion.delete({ where: { id: input.id } });
+      return { success: true };
+    }),
+
+  // Seed: popula com os dados padrão do sistema (idempotente)
+  seedDefaults: protectedProcedure.mutation(async ({ ctx }) => {
+    const existing = await ctx.db.projectArea.count();
+    if (existing > 0) return { skipped: true };
+
+    const defaultAreas = [
+      {
+        name: "Contabilidade",
+        slug: "contabilidade",
+        order: 0,
+        themes: [
+          { name: "Gestão fiscal", slug: "gestao-fiscal", order: 0 },
+          { name: "Folha de pagamento", slug: "folha-pagamento", order: 1 },
+          { name: "Balanço e DRE", slug: "balanco-dre", order: 2 },
+          { name: "Obrigações acessórias", slug: "obrigacoes-acessorias", order: 3 },
+          { name: "Consultoria contábil", slug: "consultoria-contabil", order: 4 },
+        ],
+        suggestions: [
+          "Emissão de notas fiscais",
+          "Cálculo automático de impostos",
+          "Conciliação bancária",
+          "Contas a pagar e a receber",
+          "Geração de guias (DARF, GPS, DAS)",
+          "Balancete e DRE automatizados",
+        ],
+      },
+      {
+        name: "RPA",
+        slug: "rpa",
+        order: 1,
+        themes: [
+          { name: "Automação de processos", slug: "automacao-processos", order: 0 },
+          { name: "Integração de sistemas", slug: "integracao-sistemas", order: 1 },
+          { name: "Extração de dados", slug: "extracao-dados", order: 2 },
+          { name: "Geração de relatórios", slug: "geracao-relatorios", order: 3 },
+          { name: "Validação e conferência", slug: "validacao-conferencia", order: 4 },
+        ],
+        suggestions: [
+          "Leitura de XMLs e NF-e",
+          "Preenchimento automático em sistemas",
+          "Extração de dados de PDFs",
+          "Envio automático de e-mails",
+          "Validação de cadastros",
+          "Integração com ERP",
+        ],
+      },
+      {
+        name: "Desenvolvimento",
+        slug: "desenvolvimento",
+        order: 2,
+        themes: [
+          { name: "Sistema web / SaaS", slug: "sistema-web", order: 0 },
+          { name: "Aplicativo mobile", slug: "app-mobile", order: 1 },
+          { name: "API / backend", slug: "api-backend", order: 2 },
+          { name: "Website / landing page", slug: "website", order: 3 },
+          { name: "Portal / intranet", slug: "portal-intranet", order: 4 },
+          { name: "Manutenção / melhorias", slug: "manutencao", order: 5 },
+          { name: "Integração de sistemas", slug: "integracao-sistemas", order: 6 },
+        ],
+        suggestions: [
+          "Login e cadastro de usuários",
+          "Dashboard / painel administrativo",
+          "Relatórios e gráficos",
+          "Notificações (e-mail / push)",
+          "Upload de arquivos",
+          "Integração com APIs externas",
+          "Exportação de dados (PDF / Excel)",
+          "Controle de permissões e usuários",
+        ],
+      },
+      {
+        name: "Consultoria técnica",
+        slug: "consultoria",
+        order: 3,
+        themes: [{ name: "Consultoria técnica", slug: "consultoria-tecnica", order: 0 }],
+        suggestions: [],
+      },
+      {
+        name: "Outro",
+        slug: "outro",
+        order: 4,
+        themes: [{ name: "Outro / a definir", slug: "outro-definir", order: 0 }],
+        suggestions: [],
+      },
+    ];
+
+    for (const area of defaultAreas) {
+      const created = await ctx.db.projectArea.create({
+        data: {
+          name: area.name,
+          slug: area.slug,
+          order: area.order,
+          themes: {
+            create: area.themes,
+          },
+        },
+      });
+      for (let i = 0; i < area.suggestions.length; i++) {
+        await ctx.db.featureSuggestion.create({
+          data: { label: area.suggestions[i], areaSlug: created.slug, order: i },
+        });
+      }
+    }
+
+    return { seeded: true };
+  }),
+});
