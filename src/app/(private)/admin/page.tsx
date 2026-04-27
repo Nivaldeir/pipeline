@@ -5,6 +5,7 @@ import { STATUS_CONFIG } from "@/shared/types";
 import type { ProjectStatus } from "@/shared/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
 import { Progress } from "@/src/shared/components/ui/progress";
+import { useCountUp } from "@/shared/hooks/use-count-up";
 import {
   FolderKanban,
   Clock,
@@ -30,12 +31,55 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
   completed: "Concluído",
 };
 
+const STATUS_PROGRESS_COLOR: Record<ProjectStatus, string> = {
+  backlog: "bg-muted-foreground/40",
+  todo: "bg-blue-500",
+  "in-progress": "bg-green-500",
+  review: "bg-yellow-500",
+  completed: "bg-emerald-500",
+};
+
+function StatCard({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  color,
+  delay = 0,
+}: {
+  label: string;
+  value: number;
+  sub: string;
+  icon: React.ElementType;
+  color: string;
+  delay?: number;
+}) {
+  const animated = useCountUp(value, 900);
+
+  return (
+    <Card
+      className="bg-card overflow-hidden animate-fade-up"
+      style={{ animationDelay: `${delay}ms`, animationFillMode: "both" }}
+    >
+      <CardContent className="flex items-center justify-between p-4 gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-muted-foreground truncate">{label}</p>
+          <p className={`text-2xl font-bold tabular-nums ${color}`}>{animated}</p>
+          <p className="text-xs text-muted-foreground truncate">{sub}</p>
+        </div>
+        <div className={`shrink-0 flex h-10 w-10 items-center justify-center rounded-xl bg-current/10`}>
+          <Icon className={`h-5 w-5 ${color}`} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function AdminDashboard() {
   const { projects, requests } = useProjects();
 
   const stats = {
     total: projects.length,
-    backlog: projects.filter((p) => p.status === "backlog").length,
     inProgress: projects.filter((p) => p.status === "in-progress").length,
     review: projects.filter((p) => p.status === "review").length,
     completed: projects.filter((p) => p.status === "completed").length,
@@ -48,78 +92,74 @@ export default function AdminDashboard() {
   const totalMax = Math.max(stats.total, 1);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Visão geral dos projetos e métricas
-        </p>
+    <div className="space-y-5">
+      <div className="animate-fade-up" style={{ animationFillMode: "both" }}>
+        <h1 className="text-xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">Visão geral dos projetos e métricas</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-card">
-          <CardContent className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Total</p>
-              <p className="text-xl font-bold">{stats.total}</p>
-              <p className="text-xs text-muted-foreground">
-                {stats.pendingRequests} pendentes
-              </p>
-            </div>
-            <FolderKanban className="h-8 w-8 text-muted-foreground/50" />
-          </CardContent>
-        </Card>
-        <Card className="bg-card">
-          <CardContent className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Em Desenvolvimento</p>
-              <p className="text-xl font-bold text-amber-500">{stats.inProgress}</p>
-              <p className="text-xs text-muted-foreground">{stats.review} em revisão</p>
-            </div>
-            <Clock className="h-8 w-8 text-amber-500/50" />
-          </CardContent>
-        </Card>
-        <Card className="bg-card">
-          <CardContent className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Concluídos</p>
-              <p className="text-xl font-bold text-emerald-500">{stats.completed}</p>
-              <p className="text-xs text-muted-foreground">{completionRate}% conclusão</p>
-            </div>
-            <CheckCircle className="h-8 w-8 text-emerald-500/50" />
-          </CardContent>
-        </Card>
-        <Card className="bg-card">
-          <CardContent className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Alta Prioridade</p>
-              <p className="text-xl font-bold text-destructive">{stats.highPriority}</p>
-              <p className="text-xs text-muted-foreground">requerem atenção</p>
-            </div>
-            <AlertCircle className="h-8 w-8 text-destructive/50" />
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Total de Projetos"
+          value={stats.total}
+          sub={`${stats.pendingRequests} pendentes`}
+          icon={FolderKanban}
+          color="text-foreground"
+          delay={60}
+        />
+        <StatCard
+          label="Em Desenvolvimento"
+          value={stats.inProgress}
+          sub={`${stats.review} em revisão`}
+          icon={Clock}
+          color="text-amber-500"
+          delay={120}
+        />
+        <StatCard
+          label="Concluídos"
+          value={stats.completed}
+          sub={`${completionRate}% de conclusão`}
+          icon={CheckCircle}
+          color="text-emerald-500"
+          delay={180}
+        />
+        <StatCard
+          label="Alta Prioridade"
+          value={stats.highPriority}
+          sub="requerem atenção"
+          icon={AlertCircle}
+          color="text-destructive"
+          delay={240}
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="bg-card">
+        <Card
+          className="bg-card animate-fade-up"
+          style={{ animationDelay: "300ms", animationFillMode: "both" }}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              Progresso Geral
+              Progresso por Status
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 pt-0">
+          <CardContent className="space-y-3 pt-0">
             {STATUS_ORDER.map((status) => {
               const count = projects.filter((p) => p.status === status).length;
+              const pct = (count / totalMax) * 100;
               return (
                 <div key={status} className="flex items-center gap-3">
-                  <span className="w-24 shrink-0 text-xs">{STATUS_LABELS[status]}</span>
-                  <Progress
-                    value={(count / totalMax) * 100}
-                    className="h-1.5 flex-1"
-                  />
-                  <span className="w-6 shrink-0 text-right text-xs text-muted-foreground">
+                  <span className="w-28 shrink-0 text-xs text-muted-foreground">
+                    {STATUS_LABELS[status]}
+                  </span>
+                  <div className="relative flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${STATUS_PROGRESS_COLOR[status]}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="w-5 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
                     {count}
                   </span>
                 </div>
@@ -128,7 +168,10 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card">
+        <Card
+          className="bg-card animate-fade-up"
+          style={{ animationDelay: "360ms", animationFillMode: "both" }}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
@@ -137,7 +180,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-1.5">
-              {projects.slice(0, 5).map((project) => {
+              {projects.slice(0, 5).map((project, i) => {
                 const config = STATUS_CONFIG[project.status] ?? {
                   label: project.status,
                   color: "bg-muted text-muted-foreground",
@@ -145,7 +188,8 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={project.id}
-                    className="flex items-center justify-between gap-2 rounded-md bg-secondary/30 px-2.5 py-1.5"
+                    className="flex items-center justify-between gap-2 rounded-lg bg-secondary/40 px-3 py-2 transition-colors hover:bg-secondary/70 animate-fade-up"
+                    style={{ animationDelay: `${400 + i * 50}ms`, animationFillMode: "both" }}
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{project.title}</p>
@@ -153,14 +197,18 @@ export default function AdminDashboard() {
                         {project.projectType}
                       </p>
                     </div>
-                    <span
-                      className={`shrink-0 text-xs px-1.5 py-0.5 rounded ${config.color}`}
-                    >
+                    <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${config.color}`}>
                       {config.label}
                     </span>
                   </div>
                 );
               })}
+
+              {projects.length === 0 && (
+                <p className="text-center text-xs text-muted-foreground py-6">
+                  Nenhum projeto cadastrado
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

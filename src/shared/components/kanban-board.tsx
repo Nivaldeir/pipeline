@@ -29,13 +29,10 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const [draggedProject, setDraggedProject] = useState<Project | null>(null);
 
-  const handleDragStart = useCallback(
-    (e: React.DragEvent, project: Project) => {
-      setDraggedProject(project);
-      e.dataTransfer.effectAllowed = "move";
-    },
-    []
-  );
+  const handleDragStart = useCallback((e: React.DragEvent, project: Project) => {
+    setDraggedProject(project);
+    e.dataTransfer.effectAllowed = "move";
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -53,17 +50,24 @@ export function KanbanBoard({
     [draggedProject, onMoveProject]
   );
 
-  const getProjectsByStatus = (status: ProjectStatus) => {
-    return projects.filter((p) => p.status === status);
-  };
+  const handleDragEnd = useCallback(() => {
+    setDraggedProject(null);
+  }, []);
+
+  const getProjectsByStatus = (status: ProjectStatus) =>
+    projects.filter((p) => p.status === status);
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 h-[calc(100vh-200px)]">
+    <div
+      className="flex gap-3 overflow-x-auto pb-4 h-[calc(100vh-200px)]"
+      onDragEnd={handleDragEnd}
+    >
       {visibleColumns.map((status) => (
         <KanbanColumn
           key={status}
           status={status}
           projects={getProjectsByStatus(status)}
+          draggingProjectId={draggedProject?.id ?? null}
           onProjectClick={onProjectClick}
           canDrag={canDrag}
           onDragStart={handleDragStart}
