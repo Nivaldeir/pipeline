@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { router, protectedProcedure } from "../trpc";
 
 export const commentRouter = router({
-  byProject: publicProcedure
+  byProject: protectedProcedure
     .input(
       z.object({
         projectId: z.string(),
@@ -10,10 +10,19 @@ export const commentRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
+      const requestingUser = await ctx.db.user.findUnique({
+        where: { id: ctx.userId },
+        select: { role: true },
+      });
+
+      // Clientes só podem ver mensagens do canal global
+      const isClient = requestingUser?.role === "CLIENT";
+      const effectiveVisibility = isClient ? "GLOBAL" : input.visibility;
+
       const comments = await ctx.db.comment.findMany({
         where: {
           projectId: input.projectId,
-          ...(input.visibility !== "ALL" ? { visibility: input.visibility } : {}),
+          ...(effectiveVisibility !== "ALL" ? { visibility: effectiveVisibility } : {}),
         },
         include: { user: { select: { id: true, name: true, role: true } } },
         orderBy: { createdAt: "asc" },

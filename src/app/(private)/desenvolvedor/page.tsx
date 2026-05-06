@@ -18,7 +18,7 @@ import { Badge } from "@/src/shared/components/ui/badge";
 import { Button } from "@/src/shared/components/ui/button";
 import { ScrollArea } from "@/src/shared/components/ui/scroll-area";
 import { Separator } from "@/src/shared/components/ui/separator";
-import { Calendar, FileText, Clock, AlertTriangle, LayoutList } from "lucide-react";
+import { Calendar, FileText, Clock, AlertTriangle, LayoutList, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
@@ -187,17 +187,29 @@ export default function DesenvolvedorDashboard() {
 
                 <Separator />
 
-                {/* Link para especificação */}
-                <Link
-                  href={`/desenvolvedor/projetos/${selectedProject.id}/especificacao`}
-                  onClick={() => setSelectedProject(null)}
-                >
-                  <Button variant="outline" className="w-full gap-2">
-                    <LayoutList className="h-4 w-4" />
-                    Ver especificação e registrar horas
-                    <ExternalLink className="h-3 w-3 ml-auto" />
-                  </Button>
-                </Link>
+                {/* Links de navegação */}
+                <div className="space-y-2">
+                  <Link
+                    href={`/desenvolvedor/projetos/${selectedProject.id}/especificacao`}
+                    onClick={() => setSelectedProject(null)}
+                  >
+                    <Button variant="outline" className="w-full gap-2">
+                      <LayoutList className="h-4 w-4" />
+                      Ver especificação e registrar horas
+                      <ExternalLink className="h-3 w-3 ml-auto" />
+                    </Button>
+                  </Link>
+                  <Link
+                    href={`/projeto/${selectedProject.id}`}
+                    onClick={() => setSelectedProject(null)}
+                  >
+                    <Button variant="outline" className="w-full gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Chat do projeto
+                      <ExternalLink className="h-3 w-3 ml-auto" />
+                    </Button>
+                  </Link>
+                </div>
 
                 <Separator />
 
