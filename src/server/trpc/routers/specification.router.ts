@@ -1,11 +1,32 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { router, protectedProcedure } from "../trpc";
+import { router, protectedProcedure, adminProcedure } from "../trpc";
+import type { Context } from "../context";
 import Anthropic from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
+
+// Permite ADMIN ou o próprio assignee a alterar progresso/horas da tarefa
+async function assertAdminOrAssignee(
+  ctx: Context & { userId: string },
+  taskId: string
+) {
+  const [user, task] = await Promise.all([
+    ctx.db.user.findUnique({ where: { id: ctx.userId }, select: { role: true } }),
+    ctx.db.phaseTask.findUnique({ where: { id: taskId }, select: { assigneeId: true } }),
+  ]);
+  if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "Tarefa não encontrada" });
+  const isAdmin = user?.role === "ADMIN";
+  const isAssignee = task.assigneeId === ctx.userId;
+  if (!isAdmin && !isAssignee) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Apenas o administrador ou o responsável pode alterar esta tarefa",
+    });
+  }
+}
 
 export const specificationRouter = router({
   // Busca todas as fases de um projeto com suas tarefas
@@ -28,7 +49,7 @@ export const specificationRouter = router({
     }),
 
   // Cria uma nova fase
-  createPhase: protectedProcedure
+  createPhase: adminProcedure
     .input(
       z.object({
         projectId: z.string(),
@@ -61,7 +82,7 @@ export const specificationRouter = router({
     }),
 
   // Atualiza uma fase
-  updatePhase: protectedProcedure
+  updatePhase: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -82,7 +103,7 @@ export const specificationRouter = router({
     }),
 
   // Remove uma fase (cascade deleta as tarefas)
-  deletePhase: protectedProcedure
+  deletePhase: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const phase = await ctx.db.projectPhase.findUnique({
@@ -102,7 +123,7 @@ export const specificationRouter = router({
     }),
 
   // Reordena fases (recebe array de ids na ordem desejada)
-  reorderPhases: protectedProcedure
+  reorderPhases: adminProcedure
     .input(z.object({ phaseIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
       await Promise.all(
@@ -114,7 +135,7 @@ export const specificationRouter = router({
     }),
 
   // Cria uma tarefa dentro de uma fase
-  createTask: protectedProcedure
+  createTask: adminProcedure
     .input(
       z.object({
         phaseId: z.string(),
@@ -143,7 +164,7 @@ export const specificationRouter = router({
     }),
 
   // Atualiza uma tarefa
-  updateTask: protectedProcedure
+  updateTask: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -171,6 +192,7 @@ export const specificationRouter = router({
   logHours: protectedProcedure
     .input(z.object({ id: z.string(), hoursWorked: z.number().min(0) }))
     .mutation(async ({ ctx, input }) => {
+      await assertAdminOrAssignee(ctx, input.id);
       const task = await ctx.db.phaseTask.update({
         where: { id: input.id },
         data: { hoursWorked: input.hoursWorked },
@@ -194,6 +216,7 @@ export const specificationRouter = router({
   toggleTaskComplete: protectedProcedure
     .input(z.object({ id: z.string(), completed: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
+      await assertAdminOrAssignee(ctx, input.id);
       const task = await ctx.db.phaseTask.update({
         where: { id: input.id },
         data: { completedAt: input.completed ? new Date() : null },
@@ -213,7 +236,7 @@ export const specificationRouter = router({
     }),
 
   // Remove uma tarefa
-  deleteTask: protectedProcedure
+  deleteTask: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.phaseTask.delete({ where: { id: input.id } });
@@ -221,7 +244,7 @@ export const specificationRouter = router({
     }),
 
   // Sugere fases e tarefas usando Claude AI
-  suggestWithAI: protectedProcedure
+  suggestWithAI: adminProcedure
     .input(z.object({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const project = await ctx.db.project.findUnique({
@@ -255,7 +278,7 @@ export const specificationRouter = router({
         .join("\n");
 
       const message = await anthropic.messages.create({
-        model: "claude-opus-4-6",
+        model: "claude-opus-4-7",
         max_tokens: 2048,
         messages: [
           {
@@ -319,7 +342,7 @@ Diretrizes:
     }),
 
   // Aceita as sugestões da IA e cria as fases/tarefas no banco
-  acceptAISuggestions: protectedProcedure
+  acceptAISuggestions: adminProcedure
     .input(
       z.object({
         projectId: z.string(),

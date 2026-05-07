@@ -32,9 +32,13 @@ import {
   Loader2,
   Check,
   AlertTriangle,
+  Layers,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { AISuggestedPhase } from "@/shared/types";
+import { STATUS_CONFIG, PRIORITY_CONFIG } from "@/shared/types";
+import { formatDate } from "@/shared/utils";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -171,41 +175,83 @@ export default function EspecificacaoPage({ params }: Props) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3">
-          <Link href={`/projeto/${projectId}`}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Especificação do Projeto</h1>
-            <p className="text-muted-foreground text-sm">
-              {project?.title ?? "Carregando..."}
-            </p>
+      <div className="relative overflow-hidden rounded-xl border bg-linear-to-br from-primary/6 via-background to-background">
+        <div className="absolute inset-y-0 left-0 w-1 bg-linear-to-b from-primary to-primary/30" />
+
+        <div className="p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex items-start gap-3 min-w-0 flex-1">
+              <Link href={`/projeto/${projectId}`}>
+                <Button variant="ghost" size="icon" className="shrink-0 -ml-2">
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              </Link>
+
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
+                <Layers className="h-5 w-5" />
+              </div>
+
+              <div className="min-w-0 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Link href={`/projeto/${projectId}`} className="hover:text-foreground transition-colors">
+                    Projeto
+                  </Link>
+                  <ChevronRight className="h-3 w-3" />
+                  <span className="text-foreground font-medium">Especificação</span>
+                </div>
+
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
+                  {project?.title ?? "Carregando..."}
+                </h1>
+
+                {project && (
+                  <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                    <Badge variant="secondary" className="text-xs">
+                      {STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG]?.label ?? project.status}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${PRIORITY_CONFIG[project.priority].color}`}
+                    >
+                      {PRIORITY_CONFIG[project.priority].label}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs font-normal">
+                      {project.projectType}
+                    </Badge>
+                    {project.estimatedDeadline && (
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        {formatDate(project.estimatedDeadline)}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-2 shrink-0">
+              <Button
+                variant="outline"
+                onClick={handleSuggestAI}
+                disabled={suggestAI.isPending}
+              >
+                {suggestAI.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-2" />
+                )}
+                Sugerir com IA
+              </Button>
+              <Button
+                onClick={() =>
+                  setPhaseDialog({ open: true, mode: "create", name: "", description: "", estimatedHours: 0 })
+                }
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Fase
+              </Button>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={handleSuggestAI}
-            disabled={suggestAI.isPending}
-          >
-            {suggestAI.isPending ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
-            )}
-            Sugerir com IA
-          </Button>
-          <Button
-            onClick={() =>
-              setPhaseDialog({ open: true, mode: "create", name: "", description: "", estimatedHours: 0 })
-            }
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Fase
-          </Button>
         </div>
       </div>
 
@@ -420,16 +466,11 @@ export default function EspecificacaoPage({ params }: Props) {
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6 text-destructive hover:text-destructive"
-                              onClick={async () => {
-                                await deleteTask.mutateAsync({ id: task.id });
-                                refetch();
-                              }}
+                              onClick={() => deleteTask.mutate({ id: task.id })}
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1 whitespace-nowrap opacity-100 group-hover:opacity-0 transition-opacity absolute">
-                          </span>
                           <span className="text-xs text-muted-foreground flex items-center gap-1 whitespace-nowrap ml-auto group-hover:hidden">
                             <Clock className="h-3 w-3" />
                             {task.estimatedHours}h

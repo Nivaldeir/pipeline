@@ -21,3 +21,19 @@ const enforceAuth = t.middleware(({ ctx, next }) => {
 });
 
 export const protectedProcedure = t.procedure.use(enforceAuth);
+
+const enforceAdmin = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Não autenticado" });
+  }
+  const user = await ctx.db.user.findUnique({
+    where: { id: ctx.userId },
+    select: { role: true },
+  });
+  if (user?.role !== "ADMIN") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito a administradores" });
+  }
+  return next({ ctx: { ...ctx, userId: ctx.userId } });
+});
+
+export const adminProcedure = t.procedure.use(enforceAdmin);
