@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQueryState, parseAsString } from "nuqs";
 import { useClients } from "@/shared/context/clients-context";
 import { useProjects } from "@/shared/context/projects-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
@@ -44,7 +45,10 @@ import type { User } from "@/shared/types";
 export default function ClientesPage() {
   const { clients, addClient, updateClient, deleteClient } = useClients();
   const { projects } = useProjects();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useQueryState(
+    "q",
+    parseAsString.withDefault("").withOptions({ clearOnDefault: true })
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<User | null>(null);

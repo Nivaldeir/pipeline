@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/src/shared/components/ui/button";
 import { Input } from "@/src/shared/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
@@ -8,7 +9,7 @@ import { Switch } from "@/src/shared/components/ui/switch";
 import { Separator } from "@/src/shared/components/ui/separator";
 import { Textarea } from "@/src/shared/components/ui/textarea";
 import { useToast } from "@/src/shared/hooks/use-toast";
-import { Building, Bell, Shield, Database, Globe } from "lucide-react";
+import { Building, Bell, Shield, Database, Globe, Tag, ChevronRight } from "lucide-react";
 
 export default function AdminConfiguracoesPage() {
   const { toast } = useToast();
@@ -100,6 +101,23 @@ export default function AdminConfiguracoesPage() {
       </div>
 
       <div className="grid gap-4 sm:gap-6">
+        <Link href="/admin/configuracoes/categorias" className="block group">
+          <Card className="min-w-0 overflow-hidden border-primary/20 bg-linear-to-br from-primary/5 via-background to-background transition-colors hover:border-primary/40 hover:bg-primary/3">
+            <CardContent className="flex items-center gap-4 p-4 sm:p-5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
+                <Tag className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold sm:text-base">Categorias, temas e sugestões</p>
+                <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+                  Configure áreas, subtipos e funcionalidades sugeridas no formulário de solicitação de projetos.
+                </p>
+              </div>
+              <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+            </CardContent>
+          </Card>
+        </Link>
+
         <Card className="min-w-0 overflow-hidden">
           <CardHeader className="p-4 sm:p-6 pb-2">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">

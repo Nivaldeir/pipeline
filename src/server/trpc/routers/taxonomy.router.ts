@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { router, publicProcedure, protectedProcedure, adminProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const taxonomyRouter = router({
@@ -29,7 +29,7 @@ export const taxonomyRouter = router({
     });
   }),
 
-  createArea: protectedProcedure
+  createArea: adminProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -43,7 +43,7 @@ export const taxonomyRouter = router({
       return ctx.db.projectArea.create({ data: input, include: { themes: true } });
     }),
 
-  updateArea: protectedProcedure
+  updateArea: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -57,7 +57,7 @@ export const taxonomyRouter = router({
       return ctx.db.projectArea.update({ where: { id }, data, include: { themes: true } });
     }),
 
-  deleteArea: protectedProcedure
+  deleteArea: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.projectArea.delete({ where: { id: input.id } });
@@ -68,7 +68,7 @@ export const taxonomyRouter = router({
   // TEMAS
   // ==========================================
 
-  createTheme: protectedProcedure
+  createTheme: adminProcedure
     .input(
       z.object({
         areaId: z.string(),
@@ -85,7 +85,7 @@ export const taxonomyRouter = router({
       return ctx.db.projectTheme.create({ data: input });
     }),
 
-  updateTheme: protectedProcedure
+  updateTheme: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -99,7 +99,7 @@ export const taxonomyRouter = router({
       return ctx.db.projectTheme.update({ where: { id }, data });
     }),
 
-  deleteTheme: protectedProcedure
+  deleteTheme: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.projectTheme.delete({ where: { id: input.id } });
@@ -128,7 +128,7 @@ export const taxonomyRouter = router({
     });
   }),
 
-  createSuggestion: protectedProcedure
+  createSuggestion: adminProcedure
     .input(
       z.object({
         label: z.string().min(1),
@@ -140,7 +140,7 @@ export const taxonomyRouter = router({
       return ctx.db.featureSuggestion.create({ data: input });
     }),
 
-  updateSuggestion: protectedProcedure
+  updateSuggestion: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -155,7 +155,7 @@ export const taxonomyRouter = router({
       return ctx.db.featureSuggestion.update({ where: { id }, data });
     }),
 
-  deleteSuggestion: protectedProcedure
+  deleteSuggestion: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.featureSuggestion.delete({ where: { id: input.id } });
@@ -163,7 +163,7 @@ export const taxonomyRouter = router({
     }),
 
   // Seed: popula com os dados padrão do sistema (idempotente)
-  seedDefaults: protectedProcedure.mutation(async ({ ctx }) => {
+  seedDefaults: adminProcedure.mutation(async ({ ctx }) => {
     const existing = await ctx.db.projectArea.count();
     if (existing > 0) return { skipped: true };
 

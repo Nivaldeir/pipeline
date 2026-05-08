@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { AuthProvider } from "@/shared/context/auth-context";
 import { TRPCProvider } from "@/shared/trpc/trpc-provider";
 import { ProjectsProvider } from "@/shared/context/projects-context";
@@ -26,20 +27,22 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${inter.className} antialiased`}>
-        <AuthProvider>
-          <TRPCProvider>
-          <ProjectsProvider>
-            <ClientsProvider>
-              <CommentsProvider>
-                <FilesProvider>
-                  {children}
-                  <Toaster />
-                </FilesProvider>
-              </CommentsProvider>
-            </ClientsProvider>
-          </ProjectsProvider>
-          </TRPCProvider>
-        </AuthProvider>
+        <NuqsAdapter>
+          <AuthProvider>
+            <TRPCProvider>
+              <ProjectsProvider>
+                <ClientsProvider>
+                  <CommentsProvider>
+                    <FilesProvider>
+                      {children}
+                      <Toaster />
+                    </FilesProvider>
+                  </CommentsProvider>
+                </ClientsProvider>
+              </ProjectsProvider>
+            </TRPCProvider>
+          </AuthProvider>
+        </NuqsAdapter>
         <Analytics />
       </body>
     </html>
