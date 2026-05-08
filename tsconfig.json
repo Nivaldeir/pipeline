@@ -23,9 +23,15 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@/shared/*": ["./src/shared/*"],
-      "@/server/*": ["./src/server/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@/shared/*": [
+        "./src/shared/*"
+      ],
+      "@/server/*": [
+        "./src/server/*"
+      ]
     }
   },
   "include": [
