@@ -75,50 +75,54 @@ export default function DesenvolvedorDashboard() {
     toast.success("Status do projeto atualizado");
   };
 
+  const statItems = [
+    { label: "Atribuídos", value: stats.assigned, color: "text-foreground" },
+    {
+      label: "Em desenvolvimento",
+      value: stats.inProgress,
+      color: "text-amber-500",
+    },
+    { label: "Em revisão", value: stats.review, color: "text-purple-500" },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Projetos</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-8">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Projetos</h1>
+        <p className="text-sm text-muted-foreground">
           Gerencie e atualize o status dos projetos
         </p>
-      </div>
+      </header>
 
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="p-4 rounded-lg bg-card border border-border">
-          <p className="text-sm text-muted-foreground">Projetos Atribuídos</p>
-          <p className="text-2xl font-bold">{stats.assigned}</p>
-        </div>
-        <div className="p-4 rounded-lg bg-card border border-border">
-          <p className="text-sm text-muted-foreground">Em Desenvolvimento</p>
-          <p className="text-2xl font-bold text-amber-500">{stats.inProgress}</p>
-        </div>
-        <div className="p-4 rounded-lg bg-card border border-border">
-          <p className="text-sm text-muted-foreground">Em Revisão</p>
-          <p className="text-2xl font-bold text-purple-500">{stats.review}</p>
-        </div>
-      </div>
+      <dl className="flex flex-wrap items-end gap-x-10 gap-y-4 border-y border-border/60 py-4">
+        {statItems.map((s) => (
+          <div key={s.label} className="flex flex-col">
+            <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+              {s.label}
+            </dt>
+            <dd className={`text-2xl font-semibold tabular-nums ${s.color}`}>
+              {s.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
 
-      {/* Aviso */}
-      <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 text-amber-500 text-sm">
-        <AlertTriangle className="h-4 w-4 shrink-0" />
-        Arraste os cards entre as colunas para atualizar o status. A coluna
-        Backlog mostra apenas projetos atribuídos a você; sair do Backlog
-        (para Arquitetura etc.) continua sendo feito pelo administrador.
-      </div>
+      <p className="flex items-start gap-2 text-xs text-muted-foreground">
+        <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-500/70" />
+        <span>
+          Arraste os cards entre as colunas para atualizar o status. A coluna
+          Backlog mostra apenas projetos atribuídos a você; sair do Backlog
+          continua sendo feito pelo administrador.
+        </span>
+      </p>
 
-      {/* Kanban Board - Desenvolvedor pode arrastar */}
-      <div className="rounded-lg border border-border bg-card/50 p-4">
-        <KanbanBoard
-          projects={devProjects}
-          onProjectClick={setSelectedProject}
-          onMoveProject={handleMoveProject}
-          canDrag={true}
-          visibleColumns={visibleColumns}
-        />
-      </div>
+      <KanbanBoard
+        projects={devProjects}
+        onProjectClick={setSelectedProject}
+        onMoveProject={handleMoveProject}
+        canDrag={true}
+        visibleColumns={visibleColumns}
+      />
 
       {/* Modal de detalhes do projeto */}
       <Dialog

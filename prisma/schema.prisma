@@ -38,6 +38,7 @@ model User {
   notifications    Notification[]
   activityLogs     ActivityLog[]
   phaseTasks       PhaseTask[]
+  assignedPhases   ProjectPhase[] @relation("PhaseAssignee")
   sessions         Session[]
   accounts         Account[]
 
@@ -143,8 +144,27 @@ model Project {
   references            String?
   urgency               String?
   additionalInfo        String?
-  hasExistingSystem     Boolean @default(false)
+  hasExistingSystem     String? // "nao" | "sim-substituir" | "sim-integrar" | "sim-melhorar"
   existingSystemDetails String?
+  projectNarrative      String?
+
+  // Beneficios e impacto esperado
+  benefits          Json?  // array de chaves selecionadas
+  benefitsDetails   String?
+  monthlyHoursSaved Float?
+
+  // Avaliacao qualitativa (1-5)
+  ratingErrorReduction     Int?
+  ratingProcessCriticality Int?
+  ratingInternalImpact     Int?
+  ratingExternalImpact     Int?
+  ratingCompliance         Int?
+
+  // Arquitetura tecnica (preenchido pelo arquiteto)
+  solutionTypes      Json?   // array de chaves: rpa, api, ia-ocr, power-platform, python, integracao, dashboard, outro
+  mainTool           String? // python, rocketbot, automation-anywhere, power-automate, power-apps, outro
+  executionStrategy  String? // agendada, manual, trigger-email, trigger-api, tempo-real
+  architectNotes     String?
 
   // Relacionamentos
   client       User             @relation("ProjectClient", fields: [clientId], references: [id])
@@ -250,6 +270,8 @@ model ProjectPhase {
   estimatedHours Float       @default(0)
   projectId      String
   project        Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedToId   String?
+  assignedTo     User?       @relation("PhaseAssignee", fields: [assignedToId], references: [id])
   tasks          PhaseTask[]
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt

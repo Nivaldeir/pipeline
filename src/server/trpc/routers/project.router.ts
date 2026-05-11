@@ -104,6 +104,10 @@ export const projectRouter = router({
         targetAudience: project.targetAudience ?? undefined,
         expectedUsers: project.expectedUsers ?? undefined,
         urgency: project.urgency ?? undefined,
+        solutionTypes: (project.solutionTypes as string[] | null) ?? [],
+        mainTool: project.mainTool ?? undefined,
+        executionStrategy: project.executionStrategy ?? undefined,
+        architectNotes: project.architectNotes ?? undefined,
         features:
           project.features?.map((f) => ({
             id: f.id,
@@ -136,6 +140,19 @@ export const projectRouter = router({
         expectedUsers: z.string().optional(),
         urgency: z.string().optional(),
         features: z.array(z.string()).optional(),
+        // Campos novos do formulário de solicitação
+        additionalInfo: z.string().optional(),
+        hasExistingSystem: z.string().optional(),
+        existingSystemDetails: z.string().optional(),
+        projectNarrative: z.string().optional(),
+        benefits: z.array(z.string()).optional(),
+        benefitsDetails: z.string().optional(),
+        monthlyHoursSaved: z.number().optional(),
+        ratingErrorReduction: z.number().int().min(1).max(5).optional(),
+        ratingProcessCriticality: z.number().int().min(1).max(5).optional(),
+        ratingInternalImpact: z.number().int().min(1).max(5).optional(),
+        ratingExternalImpact: z.number().int().min(1).max(5).optional(),
+        ratingCompliance: z.number().int().min(1).max(5).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -174,6 +191,18 @@ export const projectRouter = router({
           targetAudience: input.targetAudience ?? null,
           expectedUsers: input.expectedUsers ?? null,
           urgency: input.urgency ?? null,
+          additionalInfo: input.additionalInfo ?? null,
+          hasExistingSystem: input.hasExistingSystem ?? null,
+          existingSystemDetails: input.existingSystemDetails ?? null,
+          projectNarrative: input.projectNarrative ?? null,
+          benefits: input.benefits ?? undefined,
+          benefitsDetails: input.benefitsDetails ?? null,
+          monthlyHoursSaved: input.monthlyHoursSaved ?? null,
+          ratingErrorReduction: input.ratingErrorReduction ?? null,
+          ratingProcessCriticality: input.ratingProcessCriticality ?? null,
+          ratingInternalImpact: input.ratingInternalImpact ?? null,
+          ratingExternalImpact: input.ratingExternalImpact ?? null,
+          ratingCompliance: input.ratingCompliance ?? null,
           features:
             input.features && input.features.length
               ? {
@@ -223,6 +252,10 @@ export const projectRouter = router({
         priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
         developerId: z.string().nullable().optional(),
         estimatedDeadline: z.date().nullable().optional(),
+        solutionTypes: z.array(z.string()).optional(),
+        mainTool: z.string().nullable().optional(),
+        executionStrategy: z.string().nullable().optional(),
+        architectNotes: z.string().nullable().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -234,6 +267,10 @@ export const projectRouter = router({
       if (rest.priority != null) data.priority = rest.priority.toUpperCase();
       if (rest.developerId !== undefined) data.developerId = rest.developerId;
       if (rest.estimatedDeadline !== undefined) data.deadline = rest.estimatedDeadline;
+      if (rest.solutionTypes !== undefined) data.solutionTypes = rest.solutionTypes;
+      if (rest.mainTool !== undefined) data.mainTool = rest.mainTool;
+      if (rest.executionStrategy !== undefined) data.executionStrategy = rest.executionStrategy;
+      if (rest.architectNotes !== undefined) data.architectNotes = rest.architectNotes;
 
       const project = await ctx.db.project.update({
         where: { id },

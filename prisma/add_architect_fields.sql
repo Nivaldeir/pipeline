@@ -1,0 +1,4 @@
+ALTER TABLE "projects" ADD COLUMN IF NOT EXISTS "solutionTypes" JSONB;
+ALTER TABLE "projects" ADD COLUMN IF NOT EXISTS "mainTool" TEXT;
+ALTER TABLE "projects" ADD COLUMN IF NOT EXISTS "executionStrategy" TEXT;
+ALTER TABLE "projects" ADD COLUMN IF NOT EXISTS "architectNotes" TEXT;

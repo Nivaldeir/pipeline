@@ -36,6 +36,7 @@ export const specificationRouter = router({
       const phases = await ctx.db.projectPhase.findMany({
         where: { projectId: input.projectId },
         include: {
+          assignedTo: { select: { id: true, name: true, email: true } },
           tasks: {
             include: {
               assignee: { select: { id: true, name: true, email: true } },
@@ -57,6 +58,7 @@ export const specificationRouter = router({
         description: z.string().optional(),
         estimatedHours: z.number().min(0).default(0),
         order: z.number().int().default(0),
+        assignedToId: z.string().nullable().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -67,8 +69,12 @@ export const specificationRouter = router({
           description: input.description ?? null,
           estimatedHours: input.estimatedHours,
           order: input.order,
+          assignedToId: input.assignedToId ?? null,
         },
-        include: { tasks: true },
+        include: {
+          assignedTo: { select: { id: true, name: true, email: true } },
+          tasks: true,
+        },
       });
       await ctx.db.activityLog.create({
         data: {
@@ -90,6 +96,7 @@ export const specificationRouter = router({
         description: z.string().nullable().optional(),
         estimatedHours: z.number().min(0).optional(),
         order: z.number().int().optional(),
+        assignedToId: z.string().nullable().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -97,7 +104,10 @@ export const specificationRouter = router({
       const phase = await ctx.db.projectPhase.update({
         where: { id },
         data,
-        include: { tasks: true },
+        include: {
+          assignedTo: { select: { id: true, name: true, email: true } },
+          tasks: true,
+        },
       });
       return phase;
     }),

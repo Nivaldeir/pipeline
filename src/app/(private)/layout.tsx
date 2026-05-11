@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/shared/context/auth-context";
-import { Header, AppSidebar } from "@/shared/components";
+import { AppSidebar } from "@/shared/components";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Spinner } from "@/src/shared/components/ui/spinner";
@@ -37,11 +37,8 @@ export default function PrivateLayout({
   return (
     <ModalProvider>
       <div className="min-h-screen bg-background">
-        <Header />
-        <div className="flex">
-          <AppSidebar />
-          <main className="flex-1 ml-64 p-6">{children}</main>
-        </div>
+        <AppSidebar />
+        <main className="ml-64 p-6">{children}</main>
       </div>
     </ModalProvider>
   );

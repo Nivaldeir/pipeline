@@ -19,6 +19,20 @@ import { Input } from "@/src/shared/components/ui/input";
 import { Label } from "@/src/shared/components/ui/label";
 import { Textarea } from "@/src/shared/components/ui/textarea";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/src/shared/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/src/shared/components/ui/select";
+import { ArchitectureTab } from "./_components/architecture-tab";
+import {
   ArrowLeft,
   Plus,
   Sparkles,
@@ -49,6 +63,7 @@ export default function EspecificacaoPage({ params }: Props) {
 
   const { data: phases, refetch } = trpc.specification.getByProject.useQuery({ projectId });
   const { data: project } = trpc.project.byId.useQuery({ id: projectId });
+  const { data: developers = [] } = trpc.user.listDevelopers.useQuery();
 
   const createPhase = trpc.specification.createPhase.useMutation({ onSuccess: () => refetch() });
   const updatePhase = trpc.specification.updatePhase.useMutation({ onSuccess: () => refetch() });
@@ -73,7 +88,15 @@ export default function EspecificacaoPage({ params }: Props) {
     name: string;
     description: string;
     estimatedHours: number;
-  }>({ open: false, mode: "create", name: "", description: "", estimatedHours: 0 });
+    assignedToId: string | null;
+  }>({
+    open: false,
+    mode: "create",
+    name: "",
+    description: "",
+    estimatedHours: 0,
+    assignedToId: null,
+  });
 
   const [taskDialog, setTaskDialog] = useState<{
     open: boolean;
@@ -134,6 +157,7 @@ export default function EspecificacaoPage({ params }: Props) {
         description: phaseDialog.description || undefined,
         estimatedHours: phaseDialog.estimatedHours,
         order: phases?.length ?? 0,
+        assignedToId: phaseDialog.assignedToId,
       });
       toast.success("Fase criada!");
     } else {
@@ -142,10 +166,18 @@ export default function EspecificacaoPage({ params }: Props) {
         name: phaseDialog.name,
         description: phaseDialog.description || undefined,
         estimatedHours: phaseDialog.estimatedHours,
+        assignedToId: phaseDialog.assignedToId,
       });
       toast.success("Fase atualizada!");
     }
-    setPhaseDialog({ open: false, mode: "create", name: "", description: "", estimatedHours: 0 });
+    setPhaseDialog({
+      open: false,
+      mode: "create",
+      name: "",
+      description: "",
+      estimatedHours: 0,
+      assignedToId: null,
+    });
   };
 
   const handleSaveTask = async () => {
@@ -244,7 +276,7 @@ export default function EspecificacaoPage({ params }: Props) {
               </Button>
               <Button
                 onClick={() =>
-                  setPhaseDialog({ open: true, mode: "create", name: "", description: "", estimatedHours: 0 })
+                  setPhaseDialog({ open: true, mode: "create", name: "", description: "", estimatedHours: 0, assignedToId: null })
                 }
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -255,6 +287,17 @@ export default function EspecificacaoPage({ params }: Props) {
         </div>
       </div>
 
+      <Tabs defaultValue="architecture" className="w-full">
+        <TabsList>
+          <TabsTrigger value="architecture">Arquitetura</TabsTrigger>
+          <TabsTrigger value="details">Detalhes</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="architecture" className="mt-4">
+          <ArchitectureTab projectId={projectId} />
+        </TabsContent>
+
+        <TabsContent value="details" className="mt-4 space-y-6">
       {/* Resumo */}
       {(phases?.length ?? 0) > 0 && (
         <div className="grid gap-4 sm:grid-cols-3">
@@ -313,7 +356,7 @@ export default function EspecificacaoPage({ params }: Props) {
               </Button>
               <Button
                 onClick={() =>
-                  setPhaseDialog({ open: true, mode: "create", name: "", description: "", estimatedHours: 0 })
+                  setPhaseDialog({ open: true, mode: "create", name: "", description: "", estimatedHours: 0, assignedToId: null })
                 }
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -362,6 +405,11 @@ export default function EspecificacaoPage({ params }: Props) {
                           Concluída
                         </Badge>
                       )}
+                      {phase.assignedTo && (
+                        <Badge variant="outline" className="text-xs">
+                          {phase.assignedTo.name}
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -384,6 +432,7 @@ export default function EspecificacaoPage({ params }: Props) {
                             name: phase.name,
                             description: phase.description ?? "",
                             estimatedHours: phase.estimatedHours,
+                            assignedToId: phase.assignedToId ?? null,
                           })
                         }
                       >
@@ -504,12 +553,14 @@ export default function EspecificacaoPage({ params }: Props) {
           })}
         </div>
       )}
+        </TabsContent>
+      </Tabs>
 
       {/* Dialog: criar/editar fase */}
       <Dialog
         open={phaseDialog.open}
         onOpenChange={(open) =>
-          !open && setPhaseDialog({ open: false, mode: "create", name: "", description: "", estimatedHours: 0 })
+          !open && setPhaseDialog({ open: false, mode: "create", name: "", description: "", estimatedHours: 0, assignedToId: null })
         }
       >
         <DialogContent>
@@ -548,9 +599,33 @@ export default function EspecificacaoPage({ params }: Props) {
                 }
               />
             </div>
+            <div className="space-y-1.5">
+              <Label>Responsável</Label>
+              <Select
+                value={phaseDialog.assignedToId ?? "__unassigned__"}
+                onValueChange={(v) =>
+                  setPhaseDialog((p) => ({
+                    ...p,
+                    assignedToId: v === "__unassigned__" ? null : v,
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__unassigned__">Sem responsável</SelectItem>
+                  {developers.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPhaseDialog({ open: false, mode: "create", name: "", description: "", estimatedHours: 0 })}>
+            <Button variant="outline" onClick={() => setPhaseDialog({ open: false, mode: "create", name: "", description: "", estimatedHours: 0, assignedToId: null })}>
               Cancelar
             </Button>
             <Button onClick={handleSavePhase} disabled={createPhase.isPending || updatePhase.isPending}>

@@ -1,16 +1,12 @@
 "use client";
 
-import { useAuth } from "@/shared/context/auth-context";
 import { useProjects } from "@/shared/context/projects-context";
 import { KanbanBoard } from "@/shared/components";
 import type { Project, ProjectStatus } from "@/shared/types";
-import { STATUS_CONFIG } from "@/shared/types";
 import { useModal } from "@/shared/context/modal-context";
 import { ProjectDetailsModal } from "../admin/projetos/_components/project-details.modal";
-import { User } from "lucide-react";
 
 export default function ClienteDashboard() {
-  const { user } = useAuth();
   const { projects } = useProjects();
   const { openModal } = useModal();
 
@@ -37,45 +33,45 @@ export default function ClienteDashboard() {
     );
   };
 
+  const statItems = [
+    { label: "Total", value: stats.total, color: "text-foreground" },
+    { label: "Backlog", value: stats.backlog, color: "text-muted-foreground" },
+    {
+      label: "Em desenvolvimento",
+      value: stats.inProgress,
+      color: "text-amber-500",
+    },
+    { label: "Concluídos", value: stats.completed, color: "text-emerald-500" },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Meus Projetos</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-8">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Meus Projetos</h1>
+        <p className="text-sm text-muted-foreground">
           Acompanhe o andamento dos seus projetos
         </p>
-      </div>
+      </header>
 
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="p-4 rounded-lg bg-card border border-border">
-          <p className="text-sm text-muted-foreground">Total de Projetos</p>
-          <p className="text-2xl font-bold">{stats.total}</p>
-        </div>
-        <div className="p-4 rounded-lg bg-card border border-border">
-          <p className="text-sm text-muted-foreground">Backlog</p>
-          <p className="text-2xl font-bold text-muted-foreground">{stats.backlog}</p>
-        </div>
-        <div className="p-4 rounded-lg bg-card border border-border">
-          <p className="text-sm text-muted-foreground">Em Desenvolvimento</p>
-          <p className="text-2xl font-bold text-amber-500">{stats.inProgress}</p>
-        </div>
-        <div className="p-4 rounded-lg bg-card border border-border">
-          <p className="text-sm text-muted-foreground">Concluídos</p>
-          <p className="text-2xl font-bold text-emerald-500">{stats.completed}</p>
-        </div>
-      </div>
+      <dl className="flex flex-wrap items-end gap-x-10 gap-y-4 border-y border-border/60 py-4">
+        {statItems.map((s) => (
+          <div key={s.label} className="flex flex-col">
+            <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+              {s.label}
+            </dt>
+            <dd className={`text-2xl font-semibold tabular-nums ${s.color}`}>
+              {s.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
 
-      {/* Kanban Board - Somente visualização para cliente */}
-      <div className="rounded-lg border border-border bg-card/50 p-4">
-        <KanbanBoard
-          projects={clientProjects}
-          onProjectClick={handleProjectClick}
-          canDrag={false}
-          visibleColumns={visibleColumns}
-        />
-      </div>
+      <KanbanBoard
+        projects={clientProjects}
+        onProjectClick={handleProjectClick}
+        canDrag={false}
+        visibleColumns={visibleColumns}
+      />
     </div>
   );
 }

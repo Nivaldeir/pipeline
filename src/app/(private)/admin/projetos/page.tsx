@@ -37,30 +37,27 @@ export default function AdminProjetosPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      <header className="flex flex-wrap items-end justify-between gap-2 border-b border-border/60 pb-4">
         <div>
-          <h1 className="text-2xl font-bold">Projetos</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight">Projetos</h1>
+          <p className="text-sm text-muted-foreground">
             Gerencie todos os projetos do sistema
           </p>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {projects.length} projetos no total
-        </div>
-      </div>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          {projects.length}{" "}
+          {projects.length === 1 ? "projeto" : "projetos"}
+        </p>
+      </header>
 
-      {/* Kanban Board - Admin pode arrastar todos */}
-      <div className="rounded-lg border border-border bg-card/50 p-4">
-        <KanbanBoard
-          projects={projects}
-          onProjectClick={handleProjectClick}
-          onMoveProject={handleMoveProject}
-          canDrag={true}
-          visibleColumns={ALL_COLUMNS}
-        />
-      </div>
+      <KanbanBoard
+        projects={projects}
+        onProjectClick={handleProjectClick}
+        onMoveProject={handleMoveProject}
+        canDrag={true}
+        visibleColumns={ALL_COLUMNS}
+      />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
+import { toast } from "sonner";
 import type { Comment, CommentVisibility } from "@/shared/types";
 import { trpc } from "@/shared/trpc/client";
 
@@ -21,14 +22,25 @@ const CommentsContext = createContext<CommentsContextType | undefined>(undefined
 export function CommentsProvider({ children }: { children: ReactNode }) {
   const utils = trpc.useUtils();
   const createComment = trpc.comment.create.useMutation({
-    onSuccess: (_, variables) =>
-      utils.comment.byProject.invalidate({ projectId: variables.projectId }),
+    onSuccess: () => utils.comment.byProject.invalidate(),
+    onError: (err) =>
+      toast.error("Não foi possível enviar a mensagem", {
+        description: err.message,
+      }),
   });
   const updateCommentMutation = trpc.comment.update.useMutation({
     onSuccess: () => utils.comment.byProject.invalidate(),
+    onError: (err) =>
+      toast.error("Não foi possível editar a mensagem", {
+        description: err.message,
+      }),
   });
   const deleteCommentMutation = trpc.comment.delete.useMutation({
     onSuccess: () => utils.comment.byProject.invalidate(),
+    onError: (err) =>
+      toast.error("Não foi possível excluir a mensagem", {
+        description: err.message,
+      }),
   });
 
   const getCommentsByProject = useCallback(

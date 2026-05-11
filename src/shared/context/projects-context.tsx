@@ -138,6 +138,18 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
         expectedUsers: project.expectedUsers,
         urgency: project.urgency,
         features: project.features,
+        additionalInfo: project.additionalInfo,
+        hasExistingSystem: project.hasExistingSystem,
+        existingSystemDetails: project.existingSystemDetails,
+        projectNarrative: project.projectNarrative,
+        benefits: project.benefits,
+        benefitsDetails: project.benefitsDetails,
+        monthlyHoursSaved: project.monthlyHoursSaved,
+        ratingErrorReduction: project.ratingErrorReduction,
+        ratingProcessCriticality: project.ratingProcessCriticality,
+        ratingInternalImpact: project.ratingInternalImpact,
+        ratingExternalImpact: project.ratingExternalImpact,
+        ratingCompliance: project.ratingCompliance,
       });
       return created.id as string;
     },

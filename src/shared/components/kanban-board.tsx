@@ -59,7 +59,7 @@ export function KanbanBoard({
 
   return (
     <div
-      className="flex gap-3 overflow-x-auto pb-4 h-[calc(100vh-200px)]"
+      className="flex gap-3 overflow-x-auto pb-4"
       onDragEnd={handleDragEnd}
     >
       {visibleColumns.map((status) => (

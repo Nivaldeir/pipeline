@@ -38,6 +38,19 @@ export interface Project {
   expectedUsers?: string;
   urgency?: string;
   features?: string[];
+  // Campos da solicitação detalhada
+  additionalInfo?: string;
+  hasExistingSystem?: string;
+  existingSystemDetails?: string;
+  projectNarrative?: string;
+  benefits?: string[];
+  benefitsDetails?: string;
+  monthlyHoursSaved?: number;
+  ratingErrorReduction?: number;
+  ratingProcessCriticality?: number;
+  ratingInternalImpact?: number;
+  ratingExternalImpact?: number;
+  ratingCompliance?: number;
   createdAt: Date;
   updatedAt: Date;
 }

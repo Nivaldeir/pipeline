@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useCallback, type ReactNode } from "react";
+import { toast } from "sonner";
 import type { ProjectFile } from "@/shared/types";
 import { trpc } from "@/shared/trpc/client";
 
@@ -39,11 +40,14 @@ function mapFile(f: Record<string, unknown>): ProjectFile {
 export function FilesProvider({ children }: { children: ReactNode }) {
   const utils = trpc.useUtils();
   const uploadFile = trpc.file.upload.useMutation({
-    onSuccess: (_, variables) =>
-      utils.file.byProject.invalidate({ projectId: variables.projectId }),
+    onSuccess: () => utils.file.byProject.invalidate(),
+    onError: (err) =>
+      toast.error("Falha no upload", { description: err.message }),
   });
   const deleteFileMutation = trpc.file.delete.useMutation({
     onSuccess: () => utils.file.byProject.invalidate(),
+    onError: (err) =>
+      toast.error("Falha ao excluir arquivo", { description: err.message }),
   });
 
   const getFilesByProject = useCallback(
