@@ -2,11 +2,14 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure, adminProcedure } from "../trpc";
 import type { Context } from "../context";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const grok = new OpenAI({
+  apiKey: process.env.XAI_API_KEY,
+  baseURL: "https://api.x.ai/v1",
 });
+
+const GROK_MODEL = "grok-4-latest";
 
 // Permite ADMIN ou o próprio assignee a alterar progresso/horas da tarefa
 async function assertAdminOrAssignee(
@@ -287,18 +290,33 @@ export const specificationRouter = router({
         .filter(Boolean)
         .join("\n");
 
-      const message = await anthropic.messages.create({
-        model: "claude-opus-4-7",
-        max_tokens: 2048,
-        messages: [
+      if (!process.env.XAI_API_KEY) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "XAI_API_KEY não está definida no .env. Reinicie o servidor após adicionar.",
+        });
+      }
+
+      let completion;
+      try {
+        completion = await grok.chat.completions.create({
+          model: GROK_MODEL,
+          temperature: 0.4,
+          response_format: { type: "json_object" },
+          messages: [
+          {
+            role: "system",
+            content:
+              "Você é um arquiteto de software experiente. Responda sempre em JSON válido, sem markdown e sem comentários, exatamente no formato pedido pelo usuário.",
+          },
           {
             role: "user",
-            content: `Você é um arquiteto de software experiente. Analise o projeto abaixo e sugira um plano de especificação técnica com fases e tarefas detalhadas, incluindo estimativa de horas para cada item.
+            content: `Analise o projeto abaixo e sugira um plano de especificação técnica com fases e tarefas detalhadas, incluindo estimativa de horas para cada item.
 
 PROJETO:
 ${projectInfo}
 
-Responda SOMENTE com um JSON válido (sem markdown, sem explicações) no seguinte formato:
+Formato de resposta (JSON):
 {
   "phases": [
     {
@@ -322,18 +340,25 @@ Diretrizes:
 - As estimativas de horas devem ser realistas para um desenvolvedor sênior
 - O total de horas da fase deve ser igual à soma das tarefas
 - Adapte as fases ao tipo e contexto do projeto`,
-          },
-        ],
-      });
+            },
+          ],
+        });
+      } catch (err) {
+        console.error("[suggestWithAI] xAI request failed:", err);
+        const msg = err instanceof Error ? err.message : "Erro desconhecido";
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Falha ao chamar a API do Grok: ${msg}`,
+        });
+      }
 
-      const content = message.content[0];
-      if (content.type !== "text") {
+      const text = completion.choices[0]?.message?.content;
+      if (!text) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Resposta inválida da IA" });
       }
 
       try {
-        // Remove possíveis blocos de markdown caso a IA os inclua mesmo assim
-        const cleaned = content.text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
         const parsed = JSON.parse(cleaned) as {
           phases: Array<{
             name: string;

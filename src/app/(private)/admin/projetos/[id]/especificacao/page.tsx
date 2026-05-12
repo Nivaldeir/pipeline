@@ -134,8 +134,9 @@ export default function EspecificacaoPage({ params }: Props) {
       const result = await suggestAI.mutateAsync({ projectId });
       setAISuggestions(result.phases);
       setAiDialogOpen(true);
-    } catch {
-      toast.error("Erro ao consultar a IA. Verifique a chave ANTHROPIC_API_KEY.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro desconhecido";
+      toast.error("Erro ao consultar a IA", { description: msg });
     }
   };
 
