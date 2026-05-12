@@ -4,12 +4,18 @@ import { router, protectedProcedure, adminProcedure } from "../trpc";
 import type { Context } from "../context";
 import OpenAI from "openai";
 
-const grok = new OpenAI({
-  apiKey: process.env.XAI_API_KEY,
-  baseURL: "https://api.x.ai/v1",
-});
-
 const GROK_MODEL = "grok-4-latest";
+
+function getGrokClient() {
+  const apiKey = process.env.XAI_API_KEY;
+  if (!apiKey) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "XAI_API_KEY não está definida no .env. Reinicie o servidor após adicionar.",
+    });
+  }
+  return new OpenAI({ apiKey, baseURL: "https://api.x.ai/v1" });
+}
 
 // Permite ADMIN ou o próprio assignee a alterar progresso/horas da tarefa
 async function assertAdminOrAssignee(
@@ -290,12 +296,7 @@ export const specificationRouter = router({
         .filter(Boolean)
         .join("\n");
 
-      if (!process.env.XAI_API_KEY) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "XAI_API_KEY não está definida no .env. Reinicie o servidor após adicionar.",
-        });
-      }
+      const grok = getGrokClient();
 
       let completion;
       try {
