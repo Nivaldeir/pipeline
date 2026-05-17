@@ -3,9 +3,96 @@
 import { useProjects } from "@/shared/context/projects-context";
 import { KanbanBoard } from "@/shared/components";
 import type { Project, ProjectStatus } from "@/shared/types";
+import { STATUS_CONFIG, PRIORITY_CONFIG } from "@/shared/types";
 import { useModal } from "@/shared/context/modal-context";
 import { toast } from "sonner";
+import { Button } from "@/src/shared/components/ui/button";
+import { Download } from "lucide-react";
 import { ProjectDetailsModal } from "./_components/project-details.modal";
+
+function escapeCSV(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  const str = Array.isArray(value) ? value.join("; ") : String(value);
+  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function formatDateCSV(date?: Date | string | null): string {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("pt-BR");
+}
+
+function downloadProjectsCSV(projects: Project[]) {
+  const headers = [
+    "ID",
+    "Título",
+    "Status",
+    "Prioridade",
+    "Tipo",
+    "Descrição",
+    "Público-alvo",
+    "Usuários esperados",
+    "Urgência",
+    "Prazo estimado",
+    "Orçamento estimado (R$)",
+    "Horas mensais economizadas",
+    "Possui sistema existente",
+    "Detalhes sistema existente",
+    "Narrativa do projeto",
+    "Benefícios",
+    "Detalhes dos benefícios",
+    "Avaliação: redução de erros",
+    "Avaliação: criticidade do processo",
+    "Avaliação: impacto interno",
+    "Avaliação: impacto externo",
+    "Avaliação: compliance",
+    "Criado em",
+    "Atualizado em",
+  ];
+
+  const rows = projects.map((p) => [
+    p.id,
+    p.title,
+    STATUS_CONFIG[p.status]?.label ?? p.status,
+    PRIORITY_CONFIG[p.priority]?.label ?? p.priority,
+    p.projectType,
+    p.description,
+    p.targetAudience,
+    p.expectedUsers,
+    p.urgency,
+    formatDateCSV(p.estimatedDeadline),
+    p.estimatedBudget,
+    p.monthlyHoursSaved,
+    p.hasExistingSystem,
+    p.existingSystemDetails,
+    p.projectNarrative,
+    p.benefits,
+    p.benefitsDetails,
+    p.ratingErrorReduction,
+    p.ratingProcessCriticality,
+    p.ratingInternalImpact,
+    p.ratingExternalImpact,
+    p.ratingCompliance,
+    formatDateCSV(p.createdAt),
+    formatDateCSV(p.updatedAt),
+  ]);
+
+  const csv =
+    "﻿" + // BOM para Excel abrir UTF-8 corretamente
+    [headers, ...rows]
+      .map((row) => row.map(escapeCSV).join(","))
+      .join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `projetos_${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 const ALL_COLUMNS: ProjectStatus[] = [
   "backlog",
@@ -45,10 +132,24 @@ export default function AdminProjetosPage() {
             Gerencie todos os projetos do sistema
           </p>
         </div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          {projects.length}{" "}
-          {projects.length === 1 ? "projeto" : "projetos"}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {projects.length}{" "}
+            {projects.length === 1 ? "projeto" : "projetos"}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              downloadProjectsCSV(projects);
+              toast.success("CSV exportado com sucesso");
+            }}
+            disabled={projects.length === 0}
+          >
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            Exportar CSV
+          </Button>
+        </div>
       </header>
 
       <KanbanBoard
